@@ -1,36 +1,13 @@
-import express from "express";
-import { check, validationResult } from "express-validator";
-import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt, { decode } from "jsonwebtoken";
+import User from "../../models/User.js"
 import config from "config";
-import auth from "../middleware/auth.js";
-
-import {registerValidator} from "../middleware/registervalidate.js"
-import validaterror from "../middleware/validationresult.js";
-
-const router = express.Router();
-
-/********************************** 
-get the request body
-validate the request body
-check if the user already exists , yes --> error // no --> create the user
-Encrypt the password
-save data in DB
-using JWT send back the response --> user id 
+import validaterror from "../../middleware/validationresult.js";
+import { check, validationResult } from "express-validator";
 
 
-@Desc : Register a new user
-@router : POST /api/users/register
-@access public
-@method POST
-*************************************/
 
-router.post(
-  "/register",
-  registerValidator
-  ,validaterror
-  ,async (req, res) => {
+export async function register(req, res){
     const {
       firstName,
       lastName,
@@ -50,6 +27,8 @@ router.post(
           .json({ errors: [{ param: "email", msg: "Email already exists" }] });
       }
 
+      const salt = await bcrypt.genSalt(10);
+      const hashedpass=await bcrypt.hash(password, salt);
       user = new User({
         firstName,
         lastName,
@@ -57,12 +36,11 @@ router.post(
         location,
         dateOfBirth,
         mobileNumber,
-        password,
+        password:hashedpass,
         dateOfcreation: Date.now(),
         role,
       });
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
+      
       await user.save();
       const payload = {
         user: {
@@ -87,26 +65,9 @@ router.post(
       res.status(500).send(error.message);
     }
   }
-);
+;
 
-/*
-Path : 
-Desc : Login a user
-Public
-
-@desc : Register a new user
-@router : POST /api/users/login
-@access public
-@method POST
-*/
-
-router.post(
-  "/login",
-  check("email", "Please include a valid email").isEmail(),
-  check("password", "Password must be strong").matches(
-    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/
-  ),
-  async (req, res) => {
+export async function login(req, res){
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -149,6 +110,7 @@ router.post(
               role: user.role,
               firstName: user.firstName,
               lastName: user.lastName,
+              profilepic:user.profilepic,
             });
           }
         }
@@ -158,15 +120,10 @@ router.post(
       res.status(500).send(error.message);
     }
   }
-);
+;
 
-/*
-Path : GET /api/users
-Desc : Takes a Token and returns the user information
-Private
-*/
 
-router.get("/", auth, async (req, res) => {
+export async function myprofile (req, res){
   try {
     const foundUser = await User.findById(req.user.id).select("-password");
     res.send(foundUser);
@@ -174,6 +131,4 @@ router.get("/", auth, async (req, res) => {
     console.error(error.message);
     res.status(500).send(error.message);
   }
-});
-
-export default router;
+}

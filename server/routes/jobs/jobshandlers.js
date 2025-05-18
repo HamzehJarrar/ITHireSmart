@@ -1,72 +1,8 @@
-import express from "express";
-import auth from "../middleware/auth.js";
-import { check, validationResult } from "express-validator";
-import checkRole from "../middleware/checkRole.js";
-import Job from "../models/Job.js";
+import { validationResult } from "express-validator";
+import Job from "../../models/Job.js"
 
-const router = express.Router();
-/*
-1- POST/jobs
-2- GET/jobs
-3- GET/jobs/:jobId
-4- DELETE/jobs/:jobId
-5- PUT/jobs/:jobId
-*/
 
-// @route   POST /api/postJobs
-// @desc    Create new Job
-// @access  Private (company only)
-
-router.post(
-  "/postJobs",
-  auth,
-
-  checkRole("company"),
-
-  //checkRole("company"),
-
-  check("jobTitle", "Title is required").notEmpty(),
-  check("company", "Company is required").notEmpty(),
-  check("location", "Location is required").notEmpty(),
-  check("salary", "Salary is required").notEmpty(),
-  check("from", "From date is required and needs to be from the past")
-    .notEmpty()
-    .custom((value, { req }) => {
-      if (new Date(value) > new Date()) {
-        throw new Error("From date must be in the past");
-      }
-      return true;
-    }),
-
-  check("jobDescription")
-    .optional()
-    .isLength({ max: 1000 })
-    .withMessage("Job description must be less than 1000 characters"),
-  check("salaryPeriod")
-    .optional()
-    .isIn(["hourly", "monthly", "yearly"])
-    .withMessage("Salary period must be one of: hourly, monthly, yearly"),
-  check("jobType")
-    .optional()
-    .isIn(["full-time", "part-time", "internship", "freelance"])
-    .withMessage("Job type must be one of: full-time, part-time"),
-  check("workType")
-    .isIn(["Remote", "onsite", "Hybrid"])
-    .withMessage("Work type must be one of: Remote, onsite, Hybrid"),
-  check("experienceLevel")
-    .optional()
-    .isIn(["entry", "mid", "senior"])
-    .withMessage("Experience level must be one of: entry, mid, senior"),
-  check("Requirements")
-    .optional()
-    .isArray()
-    .withMessage("Requirements should be an array"),
-  check("Responsibilities")
-    .optional()
-    .isArray()
-    .withMessage("Responsibilities should be an array"),
-
-  async (req, res) => {
+export async function postjob (req, res){
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
@@ -95,13 +31,10 @@ router.post(
       console.error(error.message);
       res.status(500).send(error.message);
     }
-  }
-);
-// @route   GET /api/Jobs
-// @desc    get all Jobs
-// @access  Private (company only)
+}
 
-router.get("/", async (req, res) => {
+
+ export async function showalljobs(req, res){
   try {
     let jobsPosts = await Job.find().sort({ date: -1 });
     res.json(jobsPosts);
@@ -109,12 +42,10 @@ router.get("/", async (req, res) => {
     console.error(error.message);
     res.status(500).send(error.message);
   }
-});
+}
 
-// @route   GET /api/jobs/search?keyword=developer
-// @desc    Search jobs by title or company name (case-insensitive)
-// @access  Public (for users search)=
-router.get("/search", async (req, res) => {
+
+ export async function searchjobbykeyword (req, res){
   const keyword = req.query.keyword || "";
   try {
     const regex = new RegExp(keyword, "i"); // case-insensitive and flexible
@@ -126,12 +57,10 @@ router.get("/search", async (req, res) => {
     console.error(error.message);
     res.status(500).send("Server Error");
   }
-});
+}
 
-// @route   GET /api/Jobs
-// @desc    get a job by id
-// @access  Private (company only)
-router.get("/:jobId", auth, async (req, res) => {
+
+ export async function searchjobbyid (req, res){
   try {
     const job = await Job.findById(req.params.jobId);
     if (!job) {
@@ -142,12 +71,11 @@ router.get("/:jobId", auth, async (req, res) => {
     console.error(error.message);
     res.status(500).send(error.message);
   }
-});
+}
 
-// @route   DELETE /api/jobId
-// @desc    delete a job by id
-// @access  Private (company only)
-router.delete("/:jobId", auth, async (req, res) => {
+
+
+ export async function deletejobbyid (req, res){
   try {
     const job = await Job.findById(req.params.jobId);
     if (!job) {
@@ -159,12 +87,10 @@ router.delete("/:jobId", auth, async (req, res) => {
     console.error(error.message);
     res.status(500).send(error.message);
   }
-});
+}
 
-// @route   PUT /api/jobId
-// @desc    edit a job by id
-// @access  Private (company only)
-router.put("/:jobId", auth, async (req, res) => {
+
+ export async function editjobbyid  (req, res){
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -196,9 +122,10 @@ router.put("/:jobId", auth, async (req, res) => {
     console.error(error.message);
     res.status(500).send(error.message);
   }
-});
+}
 
-router.post("/apply/:jobId", auth, async (req, res) => {
+
+ export async function jobapply (req, res){
   try {
     const job = await Job.findById(req.params.jobId);
     if (!job) {
@@ -222,9 +149,11 @@ router.post("/apply/:jobId", auth, async (req, res) => {
     console.error(error.message);
     res.status(500).send(error.message);
   }
-});
+}
 
-router.get("/companyJobs/:userId", async (req, res) => {
+
+
+ export async function showallmyjobs (req, res){
   try {
     const jobs = await Job.find({ user: req.params.userId }).sort({
       date: -1,
@@ -234,6 +163,4 @@ router.get("/companyJobs/:userId", async (req, res) => {
     console.error(error.message);
     res.status(500).send(error.message);
   }
-});
-
-export default router;
+}
