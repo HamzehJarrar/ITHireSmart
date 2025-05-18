@@ -40,6 +40,7 @@ const userSchema = new mongoose.Schema(
     enum: ["user", "admin", "company"],
     default: "user",
   },
+<<<<<<< HEAD
   /* Using AI to get This Info
   education: { type: [String] },
   experience: { type: [String] },
@@ -66,5 +67,18 @@ const userSchema = new mongoose.Schema(
 ;
   
   
+=======
+  emailVerified: {
+    type: Boolean,
+    default: false
+  },
+  emailVerificationToken: {
+    type: String
+  },
+  emailVerificationExpires: {
+    type: Date
+  }
+});
+>>>>>>> alhaj
 
 export default mongoose.model("User", userSchema);
