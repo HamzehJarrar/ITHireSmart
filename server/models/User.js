@@ -39,15 +39,15 @@ const userSchema = new mongoose.Schema({
     enum: ["user", "admin", "company"],
     default: "user",
   },
-  /* Using AI to get This Info  */
-  education:        [String],
-  experience:       [String],
-  trainingCourses:  [String],
-  skills:           [String],
-  languages:        [String]
-
-  }
-  ,profilepic:{
+  /* Using AI to get This Info
+  education: { type: [String] },
+  experience: { type: [String] },
+  trainingCourses: { type: [String] },
+  skills: { type: [String] },
+  languages: { type: [String] },
+*/ 
+  
+  profilepic:{
     type:Object,
     default:{
       url:"https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png",
