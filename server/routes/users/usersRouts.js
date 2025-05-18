@@ -25,7 +25,7 @@ router.route("/register")
 .post(registerValidator,validaterror,handlers.register)
 
 
-/*
+/**
 @Desc : login user
 @router : POST /api/users/login
 @access public
@@ -47,5 +47,14 @@ Private
 router.route("/myprofile")
 .get(auth,handlers.myprofile)
 
+
+
+/***
+@Path : GET /api/users/editinfo
+@Desc : Takes a Token and returns the user information
+@access : Private
+**/
+router.route("/editinfo")
+.patch(auth,handlers.editInfo)
 
 export default router;

@@ -3,17 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-
-    "start": "nodemon server.js"
-    ,
-    "dev": "concurrently \"npm run server\" \"npm run client\""
-    ,"client":"cd ../client && npm start"
-    ,"server":"nodemon server.js",
     "start": "nodemon server.js",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "client": "cd ../client && npm start",
     "server": "nodemon server.js"
-
   },
   "keywords": [],
   "type": "module",
@@ -28,6 +21,7 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "express-validator": "^7.2.1",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.13.2",
     "multer": "^1.4.5-lts.2",

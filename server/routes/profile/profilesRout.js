@@ -33,7 +33,7 @@ router.post("/updateprofile",auth,
 router.post("/uploadphoto",auth,handlers.uploudphoto)
 
 
-// getmyprofile 
+// get my profile 
 router.get("/me", auth, handlers.getmyprofile);
 
 
