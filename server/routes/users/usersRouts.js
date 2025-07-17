@@ -106,9 +106,11 @@ router.route("/getcount")
 router.route("/uploadphoto")
   .post(auth, photoUpload.single("image"), handlers.uploadphoto)
 
-
-
 router.route("/getphoto")
   .get(auth, handlers.getphoto)
+
+router.route("/getallusers")
+  .get(handlers.getAllUsers)
+  //.get(auth, checkRole("admin"), handlers.getallusers) // to be handled later
 
 export default router;

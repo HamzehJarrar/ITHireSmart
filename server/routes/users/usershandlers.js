@@ -421,3 +421,13 @@ export async function getphoto(req, res) {
     res.status(500).json({ message: "Server error" });
   }
 }
+
+export async function getAllUsers(req, res) {
+  try {
+    const users = await User.find().select("-password"); 
+    res.status(200).json(users);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ msg: "Failed to fetch users" });
+  }
+}
