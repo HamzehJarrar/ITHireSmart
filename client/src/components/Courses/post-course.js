@@ -9,94 +9,95 @@ import {
   Alert,
   Snackbar,
 } from "@mui/material";
-import { addJob } from "../API/jobsAPI";
-import ApartmentIcon from "@mui/icons-material/Apartment";
-import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
-import ChecklistIcon from "@mui/icons-material/Checklist";
-import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
+import { addCourse } from "../../API/courseAPI";
+import SchoolIcon from "@mui/icons-material/School";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import DescriptionIcon from "@mui/icons-material/Description";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-const PostJob = () => {
+import dayjs from "dayjs";
+
+const PostCourse = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const [initialCompany, setInitialCompany] = useState("");
+  const [initialInstructor, setInitialInstructor] = useState("");
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmCallback, setConfirmCallback] = useState(null);
   const navigate = useNavigate();
+
   useEffect(() => {
     const firstName = localStorage.getItem("firstName");
     const lastName = localStorage.getItem("lastName");
     if (firstName && lastName) {
-      setInitialCompany(`${firstName} ${lastName}`);
+      setInitialInstructor(`${firstName} ${lastName}`);
     }
   }, []);
 
   const validationSchema = Yup.object({
-    jobTitle: Yup.string().required("Job title is required"),
-    company: Yup.string().required("Company is required"),
+    courseTitle: Yup.string().required("Course title is required"),
     location: Yup.string().required("Location is required"),
-    from: Yup.date().required("Start date is required"),
-    jobDescription: Yup.string().required("Job description is required"),
-    jobType: Yup.string().required("Job type is required"),
-    experienceLevel: Yup.string().required("Experience level is required"),
-    workType: Yup.string().required("Work type is required"),
-    salaryPeriod: Yup.string().required("Salary period is required"),
-    salary: Yup.number()
+    courseType: Yup.string().required("Course type is required"),
+    startAt: Yup.date().required("Start date is required"),
+    endAt: Yup.date().required("End date is required"),
+    description: Yup.string().required("Description is required"),
+    capacity: Yup.number()
       .typeError("Must be a number")
-      .required("Salary is required"),
+      .nullable()
+      .min(1, "Capacity must be at least 1"),
+    topics: Yup.string().required("Topics are required"),
+    duration: Yup.string().required("Duration is required"),
     requirements: Yup.string().required("Requirements are required"),
-    responsibilities: Yup.string().required("Responsibilities are required"),
   });
 
-  const handleBack = () => {
-    window.history.back();
-  };
+  const minDate = dayjs().add(1, "day").format("YYYY-MM-DD");
 
   return (
     <Formik
       enableReinitialize
       initialValues={{
-        jobTitle: "",
-        company: initialCompany,
-        location: "",
-        from: "",
-        jobDescription: "",
-        salaryPeriod: "monthly",
-        jobType: "",
-        experienceLevel: "",
-        salary: "",
-        workType: "",
+        courseTitle: "",
+        instructorName: initialInstructor,
+        location: "Online",
+        courseType: "Online",
+        startAt: minDate,
+        endAt: minDate,
+        description: "",
+        capacity: "",
+        topics: "",
+        duration: "1 month",
         requirements: "",
-        responsibilities: "",
       }}
       validationSchema={validationSchema}
       onSubmit={async (values, { resetForm }) => {
         setShowConfirm(true);
         setConfirmCallback(() => async () => {
-          const jobData = {
+          const courseData = {
             ...values,
-            Requirements: values.requirements
-              .split(",")
-              .map((item) => item.trim()),
-            Responsibilities: values.responsibilities
+            topics: values.topics.split(",").map((item) => item.trim()),
+            capacity:
+              values.capacity === ""
+                ? null
+                : Number(values.capacity),
+            requirements: values.requirements
               .split(",")
               .map((item) => item.trim()),
           };
 
           try {
-            await addJob(jobData);
-            setSnackbarMessage("Job posted successfully");
+            await addCourse(courseData);
+            console.log("Course Data to be sent:", courseData);
+            setSnackbarMessage("Course posted successfully");
             setSnackbarSeverity("success");
             setOpenSnackbar(true);
             resetForm();
             setTimeout(() => {
-              navigate("/FindJob");
+              navigate("/Courses");
             }, 1500);
           } catch (error) {
             console.error(error);
-            setSnackbarMessage("Failed to post job");
+            setSnackbarMessage("Failed to post course");
             setSnackbarSeverity("error");
             setOpenSnackbar(true);
           }
@@ -128,49 +129,66 @@ const PostJob = () => {
           <Button
             variant="outlined"
             sx={{ color: "black", border: "1px solid black", mb: 2 }}
-            onClick={handleBack}
+            onClick={() => navigate(-1)}
           >
             Back
           </Button>
 
           <Typography variant="h4" gutterBottom fontWeight="bold">
-            Post a Job
+            Post a Course
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
-            Fill out the form below to post a new job opening
+            Fill out the form below to post a new course offering
           </Typography>
           <Divider sx={{ mt: 2, mb: 2 }} />
 
           <Box sx={{ display: "flex", alignItems: "center", mb: 2, gap: 1 }}>
-            <ApartmentIcon sx={{ fontSize: 28 }} />
+            <SchoolIcon sx={{ fontSize: 28 }} />
             <Typography variant="h6" fontWeight="bold">
-              Basic Information
+              Course Information
             </Typography>
           </Box>
 
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
             <TextField
-              label="Job Title"
-              name="jobTitle"
-              value={values.jobTitle}
+              label="Course Title"
+              name="courseTitle"
+              value={values.courseTitle}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={touched.jobTitle && Boolean(errors.jobTitle)}
-              helperText={touched.jobTitle && errors.jobTitle}
+              error={touched.courseTitle && Boolean(errors.courseTitle)}
+              helperText={touched.courseTitle && errors.courseTitle}
               fullWidth
               margin="normal"
             />
             <TextField
-              label="Company"
-              name="company"
-              value={values.company}
+              label="Instructor Name"
+              name="instructorName"
+              value={values.instructorName}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={touched.company && Boolean(errors.company)}
-              helperText={touched.company && errors.company}
+              error={touched.instructorName && Boolean(errors.instructorName)}
+              helperText={touched.instructorName && errors.instructorName}
               fullWidth
               margin="normal"
+              disabled
             />
+            <TextField
+              select
+              label="Course Type"
+              name="courseType"
+              value={values.courseType}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={touched.courseType && Boolean(errors.courseType)}
+              helperText={touched.courseType && errors.courseType}
+              fullWidth
+              margin="normal"
+            >
+              <MenuItem value="Online">Online</MenuItem>
+              <MenuItem value="company">Company</MenuItem>
+            </TextField>
+
             <TextField
               label="Location"
               name="location"
@@ -181,18 +199,63 @@ const PostJob = () => {
               helperText={touched.location && errors.location}
               fullWidth
               margin="normal"
+              disabled={values.courseType === "Online"}
             />
+
             <TextField
-              label="From Date"
-              name="from"
+              fullWidth
               type="date"
-              value={values.from}
+              name="startAt"
+              label="Start Date"
+              value={values.startAt}
               onChange={handleChange}
               onBlur={handleBlur}
-              error={touched.from && Boolean(errors.from)}
-              helperText={touched.from && errors.from}
-              InputLabelProps={{ shrink: true }}
-              inputProps={{ max: new Date().toISOString().split("T")[0] }}
+              inputProps={{
+                min: minDate,
+              }}
+              error={touched.startAt && Boolean(errors.startAt)}
+              helperText={touched.startAt && errors.startAt}
+              margin="normal"
+            />
+            <TextField
+              fullWidth
+              type="date"
+              name="endAt"
+              label="End Date"
+              value={values.endAt}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              inputProps={{
+                min: values.startAt || minDate,
+              }}
+              error={touched.endAt && Boolean(errors.endAt)}
+              helperText={touched.endAt && errors.endAt}
+              margin="normal"
+            />
+
+            <TextField
+              label="Duration"
+              name="duration"
+              value={values.duration}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={touched.duration && Boolean(errors.duration)}
+              helperText={touched.duration && errors.duration}
+              fullWidth
+              margin="normal"
+            />
+
+            <TextField
+              label="Capacity"
+              name="capacity"
+              type="number"
+              value={values.capacity}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={
+                touched.capacity && Boolean(errors.capacity)
+              }
+              helperText={touched.capacity && errors.capacity}
               fullWidth
               margin="normal"
             />
@@ -201,114 +264,26 @@ const PostJob = () => {
           <Box
             sx={{ display: "flex", alignItems: "center", mb: 2, mt: 2, gap: 1 }}
           >
-            <BusinessCenterIcon sx={{ fontSize: 28 }} />
+            <DescriptionIcon sx={{ fontSize: 28 }} />
             <Typography variant="h6" fontWeight="bold">
-              Job Details
+              Course Details
             </Typography>
           </Box>
           <Divider sx={{ mt: 2, mb: 2 }} />
 
           <TextField
-            label="Job Description"
-            name="jobDescription"
-            value={values.jobDescription}
+            label="Description"
+            name="description"
+            value={values.description}
             onChange={handleChange}
             onBlur={handleBlur}
-            error={touched.jobDescription && Boolean(errors.jobDescription)}
-            helperText={touched.jobDescription && errors.jobDescription}
+            error={touched.description && Boolean(errors.description)}
+            helperText={touched.description && errors.description}
             fullWidth
             margin="normal"
             multiline
             rows={3}
           />
-
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-            <TextField
-              select
-              label="Job Type"
-              name="jobType"
-              value={values.jobType}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.jobType && Boolean(errors.jobType)}
-              helperText={touched.jobType && errors.jobType}
-              fullWidth
-              margin="normal"
-            >
-              <MenuItem value="full-time">Full-time</MenuItem>
-              <MenuItem value="part-time">Part-time</MenuItem>
-            </TextField>
-
-            <TextField
-              select
-              label="Experience Level"
-              name="experienceLevel"
-              value={values.experienceLevel}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.experienceLevel && Boolean(errors.experienceLevel)}
-              helperText={touched.experienceLevel && errors.experienceLevel}
-              fullWidth
-              margin="normal"
-            >
-              <MenuItem value="entry">Entry Level</MenuItem>
-              <MenuItem value="mid">Mid Level</MenuItem>
-              <MenuItem value="senior">Senior Level</MenuItem>
-            </TextField>
-
-            <TextField
-              select
-              label="Work Type"
-              name="workType"
-              value={values.workType}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.workType && Boolean(errors.workType)}
-              helperText={touched.workType && errors.workType}
-              fullWidth
-              margin="normal"
-            >
-              <MenuItem value="Remote">Remote</MenuItem>
-              <MenuItem value="onsite">Onsite</MenuItem>
-              <MenuItem value="Hybrid">Hybrid</MenuItem>
-            </TextField>
-
-            <TextField
-              select
-              label="Salary Period"
-              name="salaryPeriod"
-              value={values.salaryPeriod}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={touched.salaryPeriod && Boolean(errors.salaryPeriod)}
-              helperText={touched.salaryPeriod && errors.salaryPeriod}
-              fullWidth
-              margin="normal"
-            >
-              <MenuItem value="hourly">Hourly</MenuItem>
-              <MenuItem value="monthly">Monthly</MenuItem>
-            </TextField>
-          </Box>
-
-          <TextField
-            label="Salary"
-            name="salary"
-            value={values.salary}
-            onChange={handleChange}
-            onBlur={handleBlur}
-            error={touched.salary && Boolean(errors.salary)}
-            helperText={touched.salary && errors.salary}
-            fullWidth
-            margin="normal"
-          />
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 2 }}>
-            <ChecklistIcon />
-            <Typography variant="h6" fontWeight="bold">
-              Requirements & Responsibilities
-            </Typography>
-          </Box>
-          <Divider sx={{ mt: 1, mb: 1 }} />
 
           <TextField
             label="Requirements (comma separated)"
@@ -323,14 +298,23 @@ const PostJob = () => {
             multiline
             rows={2}
           />
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 2 }}>
+            <CalendarMonthIcon />
+            <Typography variant="h6" fontWeight="bold">
+              Topics
+            </Typography>
+          </Box>
+          <Divider sx={{ mt: 1, mb: 1 }} />
+
           <TextField
-            label="Responsibilities (comma separated)"
-            name="responsibilities"
-            value={values.responsibilities}
+            label="Topics (comma separated)"
+            name="topics"
+            value={values.topics}
             onChange={handleChange}
             onBlur={handleBlur}
-            error={touched.responsibilities && Boolean(errors.responsibilities)}
-            helperText={touched.responsibilities && errors.responsibilities}
+            error={touched.topics && Boolean(errors.topics)}
+            helperText={touched.topics && errors.topics}
             fullWidth
             margin="normal"
             multiline
@@ -339,7 +323,7 @@ const PostJob = () => {
 
           <Box sx={{ textAlign: "center", mt: 2 }}>
             <Typography variant="body2" color="text.secondary">
-              By posting this job, you agree to our terms and conditions.
+              By posting this course, you agree to our terms and conditions.
             </Typography>
           </Box>
 
@@ -349,9 +333,9 @@ const PostJob = () => {
             color="primary"
             fullWidth
             sx={{ mt: 2, bgcolor: "black" }}
-            startIcon={<ReceiptLongIcon />}
+            startIcon={<SchoolIcon />}
           >
-            Post Job
+            Post Course
           </Button>
           {showConfirm && (
             <Alert
@@ -386,7 +370,7 @@ const PostJob = () => {
                 </>
               }
             >
-              Are you sure you want to post this job?
+              Are you sure you want to post this course?
             </Alert>
           )}
 
@@ -410,4 +394,4 @@ const PostJob = () => {
   );
 };
 
-export default PostJob;
+export default PostCourse;

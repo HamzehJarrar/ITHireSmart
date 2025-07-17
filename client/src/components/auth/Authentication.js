@@ -1,9 +1,9 @@
 import React from "react";
 import { Box, TextField, Typography, Button } from "@mui/material";
 import LockOpenIcon from "@mui/icons-material/LockOpen";
-import Ellipse from "../assets/Ellipse.png";
-import Vector from "../assets/Vector.png";
-import "../App.css";
+import Ellipse from "../../assets/Ellipse.png";
+import Vector from "../../assets/Vector.png";
+import "../../App.css";
 import { Link } from "react-router-dom";
 
 const style = {

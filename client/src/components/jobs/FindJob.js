@@ -13,7 +13,7 @@ import {
   Divider,
   FormGroup,
 } from "@mui/material";
-import { getJobs } from "../API/jobsAPI";
+import { getJobs, searchJobByKeyword } from "../../API/jobsAPI";
 import { useNavigate } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -27,10 +27,6 @@ function FindJob() {
   const getRandomLightColor = (idx) => {
     const colors = ["#EFF5F5"];
     return colors[idx % colors.length];
-  };
-  const getCardTextColor = (idx) => {
-    const darkerColors = ["black"];
-    return darkerColors[idx % darkerColors.length];
   };
 
   const [errorOpen, setErrorOpen] = useState(false);
@@ -47,25 +43,24 @@ function FindJob() {
   });
   const [filteredJobs, setFilteredJobs] = useState([]);
   const [userRole, setRole] = useState("");
+  const fetchJobs = async () => {
+    try {
+      const response = await getJobs();
+      const userRole = localStorage.getItem("role");
 
-  useEffect(() => {
-    const fetchJobs = async () => {
-      try {
-        const response = await getJobs();
-        const userRole = localStorage.getItem("role");
-        // console.log("User role:", userRole);
-        const visibleJobs = response.data.filter((job) => !job.isHidden);
-        if (userRole) {
-          setRole(userRole);
-        }
-        setJobs(visibleJobs);
-        setFilteredJobs(visibleJobs);
-        console.log("Jobs:", visibleJobs.data);
-      } catch (error) {
-        console.error("Error fetching jobs:", error);
-        navigate("/404");
+      const visibleJobs = response.data.filter((job) => !job.isHidden);
+      if (userRole) {
+        setRole(userRole);
       }
-    };
+      setJobs(response.data);
+      setFilteredJobs(visibleJobs);
+      console.log("Jobs fetched successfully:", response.data);
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+      navigate("/404");
+    }
+  };
+  useEffect(() => {
     fetchJobs();
   }, [navigate]);
 
@@ -162,6 +157,16 @@ function FindJob() {
     setFilteredJobs(filtered);
     setPage(1);
   };
+  const clearFilters = () => {
+    setFilters({
+      keyword: "",
+      location: "",
+      experienceLevel: "",
+      jobTypes: [],
+      workTypes: [],
+    });
+    fetchJobs();
+  };
 
   const startIndex = (page - 1) * jobsPerPage;
   const endIndex = startIndex + jobsPerPage;
@@ -239,6 +244,49 @@ function FindJob() {
                   p: 0.5,
                 }}
               />
+            </Box>
+            <Box sx={{ mb: 2 }}>
+              <TextField
+                label="Search by Keyword"
+                variant="outlined"
+                fullWidth
+                size="small"
+                value={filters.keyword}
+                onChange={handleFilterChange}
+                name="keyword"
+                sx={{
+                  borderRadius: "12px",
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  },
+                }}
+              />
+              <Button
+                variant="contained"
+                fullWidth
+                sx={{
+                  mt: 1,
+                  background: "black",
+                  color: "white",
+                  "&:hover": {
+                    background: "#333",
+                  },
+                }}
+                onClick={async () => {
+                  try {
+                    const res = await searchJobByKeyword(filters.keyword);
+                    const visibleJobs = res.data.filter((job) => !job.isHidden);
+                    setJobs(visibleJobs);
+                    setFilteredJobs(visibleJobs);
+                    setPage(1);
+                  } catch (err) {
+                    console.error(err);
+                    setErrorOpen(true);
+                  }
+                }}
+              >
+                Search
+              </Button>
             </Box>
 
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -504,6 +552,24 @@ function FindJob() {
               >
                 Apply Filters
               </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                sx={{
+                  mt: 1.5,
+                  fontFamily: "Geist",
+                  color: "black",
+                  borderColor: "black",
+                  boxShadow: "none",
+                  "&:hover": {
+                    background: "#f5f5f5",
+                    borderColor: "black",
+                  },
+                }}
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </Button>
             </Box>
           </Card>
         </Box>
@@ -530,7 +596,7 @@ function FindJob() {
             >
               <BoltIcon sx={{ fontSize: 20, color: "#F3C623" }} />
               <span style={{ fontWeight: 500, fontSize: 14, color: "#F3C623" }}>
-                {jobs.length}
+                {filteredJobs.length}
               </span>
               <Typography
                 variant="subtitle1"
@@ -620,14 +686,11 @@ function FindJob() {
                       >
                         <Box sx={{ mr: 1 }}>
                           <img
-                            src={
-                              job.companyLogo ||
-                              "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg"
-                            }
+                            src={job.user?.profilepic?.url}
                             alt="Company Logo"
                             style={{
-                              width: "28px",
-                              height: "28px",
+                              width: "48px",
+                              height: "48px",
                               borderRadius: "50%",
                               objectFit: "cover",
                               fontFamily: "Geist",
@@ -635,19 +698,34 @@ function FindJob() {
                           />
                         </Box>
                         <Box>
-                          <Typography
-                            variant="subtitle2"
-                            sx={{
-                              color: "#334155",
-                              fontFamily: "DM Sans, Poppins, Arial",
-                              fontSize: "15px",
-                              fontWeight: 500,
-                              textTransform: "capitalize",
-                              letterSpacing: 0.1,
-                            }}
-                          >
-                            {job.company || job.companyName}
-                          </Typography>
+                          <Box sx={{ display: "flex", gap: 0.5 }}>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{
+                                color: "#334155",
+                                fontFamily: "DM Sans, Poppins, Arial",
+                                fontSize: "15px",
+                                fontWeight: 500,
+                                textTransform: "capitalize",
+                                letterSpacing: 0.1,
+                              }}
+                            >
+                              {job.user?.firstName}
+                            </Typography>
+                            <Typography
+                              variant="subtitle2"
+                              sx={{
+                                color: "#334155",
+                                fontFamily: "DM Sans, Poppins, Arial",
+                                fontSize: "15px",
+                                fontWeight: 500,
+                                textTransform: "capitalize",
+                                letterSpacing: 0.1,
+                              }}
+                            >
+                              {job.user?.lastName}
+                            </Typography>
+                          </Box>
                           <Typography
                             variant="body2"
                             sx={{
@@ -666,9 +744,9 @@ function FindJob() {
                         sx={{
                           fontWeight: 700,
                           mb: 1.2,
-                          color: getCardTextColor(idx),
+                          color: "black",
                           fontSize: "19px",
-                          fontFamily: "Poppins, DM Sans, Arial",
+                          fontFamily: "Geist",
                           textTransform: "capitalize",
                           lineHeight: 1.2,
                           letterSpacing: 0.1,
@@ -692,8 +770,8 @@ function FindJob() {
                             borderRadius: "20px",
                             fontSize: 13,
                             fontWeight: 500,
-                            color: getCardTextColor(idx),
-                            border: `1px solid ${getCardTextColor(idx)}`,
+                            color: "black",
+                            border: `1px solid black`,
                             letterSpacing: 0.2,
                             alignContent: "center",
                             textAlign: "start",
@@ -709,8 +787,8 @@ function FindJob() {
                             borderRadius: "20px",
                             fontSize: 13,
                             fontWeight: 500,
-                            color: getCardTextColor(idx),
-                            border: `1px solid ${getCardTextColor(idx)}`,
+                            color: "black",
+                            border: `1px solid black`,
                             letterSpacing: 0.2,
                             alignContent: "center",
                             textAlign: "start",
@@ -726,8 +804,8 @@ function FindJob() {
                             borderRadius: "20px",
                             fontSize: 13,
                             fontWeight: 500,
-                            color: getCardTextColor(idx),
-                            border: `1px solid ${getCardTextColor(idx)}`,
+                            color: "black",
+                            border: `1px solid black`,
                             letterSpacing: 0.2,
                             textAlign: "start",
                             alignContent: "center",
@@ -774,7 +852,7 @@ function FindJob() {
                                 fontFamily: "Geist",
                               }}
                             >
-                              {job.salary ? `$${job.salary}k` : "$2.5k"}
+                              {job.salary ? `$${job.salary}` : "0"}
                             </Typography>
                             <Typography
                               variant="body2"
@@ -793,7 +871,7 @@ function FindJob() {
                             size="small"
                             variant="contained"
                             sx={{
-                              bgcolor: getCardTextColor(idx),
+                              bgcolor: "black",
                               color: "#fff",
                               borderRadius: "14px",
                               fontFamily: "Geist",

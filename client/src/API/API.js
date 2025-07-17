@@ -13,11 +13,19 @@ API.interceptors.request.use((config) => {
 export const registerUser = (values) => API.post("/users/register", values);
 export const loginUser = (values) => API.post("/users/login", values);
 
-export const getProfile = (id) => API.get(`/profiles/${id}`);
-export const updateProfile = (id, values) => API.put(`/profiles/${id}`, values);
+export const changePassword = (values) =>
+  API.post("/users/changepassword", values);
 
+export const getPhoto = () => API.get("/users/getphoto");
+export const uploadPhoto = (values) => API.post("/users/uploadphoto", values);
 
+export const getProfile = (id) => API.get(`/profiles/user/${id}`);
+export const updateProfile = (values) =>
+  API.post("/profiles/updateprofile", values);
 
-export const getCourses = () => API.get("/course");
-export const getCourseById = (id) => API.get(`/course/${id}`);
-export const addCourse = (courseData) => API.post("/course", courseData);
+export const GetRecommendedApplicants = (jobId) => {
+  return API.get(`/jobs/${jobId}/recommendations`);
+};
+
+export const verifyEmail = (token) =>
+  API.get(`/users/verify-email?token=${token}`);

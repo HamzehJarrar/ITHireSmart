@@ -1,16 +1,20 @@
 import express from "express";
-import * as handlers from "../company/companyhandlers.js"
+import * as handlers from "../company/companyhandlers.js";
+import auth from "../../middleware/auth.js";
+import checkRole from "../../middleware/checkRole.js";
+
 const router = express.Router();
 
-// Register a new company (open to all)
-router.post("/register",handlers.companyRegister);
+// POST - Register
+router.post("/register", handlers.companyRegister);
 
+// GET - Email verification
+router.get("/verify-email", handlers.verifyCompanyEmail);
 
-// Admin approves or denies a company
-router.put("/verify/:id",handlers.verrifycompany);
+// PUT - Approve or Deny company by admin
+router.put("/verify/:id", auth, checkRole("admin"), handlers.verifyCompany);
 
-// get all companies for admin dashboard
-router.get("/showcompanies",handlers.getallcompanies);
-
+// GET - All Companies
+router.get("/", auth, checkRole("admin"), handlers.getAllCompanies);
 
 export default router;

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUser } from "../../utils/UserContext";
 import {
   AppBar,
   Box,
@@ -12,16 +13,18 @@ import {
   Tooltip,
   MenuItem,
   useMediaQuery,
+  patch,
 } from "@mui/material";
-import { styled, alpha, useTheme } from "@mui/material/styles";
+import { getProfile } from "../../API/API";
+import { styled, useTheme } from "@mui/material/styles";
 import MenuIcon from "@mui/icons-material/Menu";
 import { motion } from "framer-motion";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import SettingsIcon from "@mui/icons-material/Settings";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { Link } from "react-router-dom";
-
-// === Styled Components ===
+import { useNavigate } from "react-router-dom";
+import { Person } from "@mui/icons-material";
 const StyledAppBar = styled(AppBar)({
   background: "black",
   boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
@@ -62,7 +65,7 @@ const Logo = styled(Typography)({
 
 const StyledMenu = styled(Menu)({
   "& .MuiPaper-root": {
-    backgroundColor: "#4338ca",
+    backgroundColor: "black",
     color: "white",
     borderRadius: 12,
     boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
@@ -78,13 +81,7 @@ const StyledMenuItem = styled(MenuItem)({
   alignItems: "center",
   gap: "10px",
   transition: "0.2s ease",
-  "&:hover": { backgroundColor: alpha("#fff", 0.05) },
-});
-
-const UserAvatar = styled(Avatar)({
-  border: "2px solid rgba(255,255,255,0.2)",
-  transition: "all 0.3s ease",
-  "&:hover": { borderColor: "rgba(255,255,255,0.5)" },
+  "&:hover": { backgroundColor: "#dfdfdf", color: "black" },
 });
 
 // === Component ===
@@ -95,25 +92,63 @@ const Navbar = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
+  const { user, setUser } = useUser();
+
+  const navigate = useNavigate();
   const navItems = [
     { name: "Find Job", path: "/FindJob" },
     { name: "Courses", path: "/Courses" },
-    { name: "Hiring", path: "/Hiring" },
+    { name: "Trainings", path: "/Trainings" }, 
     ...(localStorage.getItem("role") === "company"
       ? [{ name: "Dashboard", path: "/CompanyDashboard" }]
       : []),
   ];
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/login");
+  };
+
   const userItems = [
-    { name: "Profile", icon: <AccountCircleIcon fontSize="small" /> },
-    { name: "Settings", icon: <SettingsIcon fontSize="small" /> },
+    {
+      name: "Profile",
+      path: "./users/UserProfilePage",
+      icon: <AccountCircleIcon fontSize="small" />,
+    },
+    {
+      name: "Settings",
+      path: "./common/Settings",
+      icon: <SettingsIcon fontSize="small" />,
+    },
     { name: "Logout", icon: <LogoutIcon fontSize="small" /> },
   ];
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    const fetchProfile = async () => {
+      try {
+        const userId = localStorage.getItem("userId");
+
+        if (!userId) {
+          throw new Error("User ID not found in localStorage.");
+        }
+
+        const response = await getProfile(userId);
+        const profile = response.data;
+
+        setUser({
+          ...profile.user,
+          location: profile.location,
+          experience: profile.experience,
+          education: profile.education,
+          skills: profile.skills,
+          profilepic: profile.user.profilepic,
+        });
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+      }
+    };
+
+    fetchProfile();
   }, []);
 
   const renderLinks = () =>
@@ -192,6 +227,17 @@ const Navbar = () => {
                   onClick={(e) => setUserAnchor(e.currentTarget)}
                   sx={{ p: 0.5 }}
                 >
+                  <Avatar
+                    src={user?.profilepic?.url}
+                    sx={{
+                      width: 50,
+                      height: 50,
+                      border: "3px solid #333",
+                      boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                    }}
+                  >
+                    <Person sx={{ fontSize: 80, color: "#666" }} />
+                  </Avatar>
                 </IconButton>
               </Tooltip>
             </motion.div>
@@ -205,7 +251,16 @@ const Navbar = () => {
               {userItems.map((item) => (
                 <StyledMenuItem
                   key={item.name}
-                  onClick={() => setUserAnchor(null)}
+                  onClick={() => {
+                    setUserAnchor(null);
+                    if (item.name === "Logout") {
+                      handleLogout();
+                    } else if (item.name === "Profile") {
+                      navigate("/MyProfile");
+                    } else if (item.name === "Settings") {
+                      navigate("/Settings");
+                    }
+                  }}
                 >
                   {item.icon} {item.name}
                 </StyledMenuItem>

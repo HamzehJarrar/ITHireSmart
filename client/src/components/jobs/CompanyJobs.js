@@ -6,6 +6,7 @@ import {
   Typography,
   Box,
   Container,
+  CircularProgress,
   Grid,
   Divider,
   Chip,
@@ -41,239 +42,52 @@ import {
   Search as SearchIcon,
   FilterList as FilterListIcon,
 } from "@mui/icons-material";
-import { getCompanyJob, hideJob, unhideJob, deleteJob } from "../API/jobsAPI";
+import {
+  getCompanyJob,
+  hideJob,
+  unhideJob,
+  deleteJob,
+} from "../../API/jobsAPI";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
-const enhancedBlackAndWhiteTheme = createTheme({
-  palette: {
-    mode: "light",
-    primary: {
-      main: "#000000",
-      light: "#333333",
-      dark: "#000000",
-      contrastText: "#ffffff",
-    },
-    secondary: {
-      main: "#ffffff",
-      light: "#ffffff",
-      dark: "#e0e0e0",
-      contrastText: "#000000",
-    },
-    background: {
-      default: "#ffffff",
-      paper: "#ffffff",
-    },
-    text: {
-      primary: "#000000",
-      secondary: "#555555",
-    },
-    action: {
-      active: "#000000",
-      hover: "rgba(0, 0, 0, 0.04)",
-    },
-    divider: "#e0e0e0",
-    grey: {
-      50: "#fafafa",
-      100: "#f5f5f5",
-      200: "#eeeeee",
-      300: "#e0e0e0",
-      400: "#bdbdbd",
-      500: "#9e9e9e",
-      600: "#757575",
-      700: "#616161",
-      800: "#424242",
-      900: "#212121",
-    },
-  },
-  typography: {
-    fontFamily: '"Inter", "Helvetica", "Arial", sans-serif',
-    h1: {
-      fontWeight: 700,
-      letterSpacing: "-0.025em",
-    },
-    h2: {
-      fontWeight: 700,
-      letterSpacing: "-0.025em",
-    },
-    h3: {
-      fontWeight: 700,
-      letterSpacing: "-0.025em",
-    },
-    h4: {
-      fontWeight: 700,
-      letterSpacing: "-0.025em",
-    },
-    h5: {
-      fontWeight: 600,
-      letterSpacing: "-0.025em",
-    },
-    h6: {
-      fontWeight: 600,
-      letterSpacing: "-0.025em",
-    },
-    subtitle1: {
-      fontWeight: 500,
-      letterSpacing: "-0.015em",
-    },
-    subtitle2: {
-      fontWeight: 500,
-      letterSpacing: "-0.015em",
-    },
-    body1: {
-      fontWeight: 400,
-      letterSpacing: "-0.01em",
-    },
-    body2: {
-      fontWeight: 400,
-      letterSpacing: "-0.01em",
-    },
-    button: {
-      fontWeight: 600,
-      letterSpacing: "-0.01em",
-    },
-  },
-  shape: {
-    borderRadius: 0,
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: "none",
-          fontWeight: 600,
-          padding: "8px 16px",
-          transition: "all 0.2s ease-in-out",
-          "&:hover": {
-            transform: "translateY(-1px)",
-          },
-        },
-        contained: {
-          backgroundColor: "#000000",
-          color: "#ffffff",
-          boxShadow: "none",
-          "&:hover": {
-            backgroundColor: "#333333",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-          },
-        },
-        outlined: {
-          borderColor: "#000000",
-          borderWidth: "1px",
-          color: "#000000",
-          "&:hover": {
-            backgroundColor: "rgba(0, 0, 0, 0.04)",
-            borderColor: "#000000",
-            borderWidth: "1px",
-          },
-        },
-        text: {
-          color: "#000000",
-          "&:hover": {
-            backgroundColor: "rgba(0, 0, 0, 0.04)",
-          },
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          boxShadow: "none",
-          border: "1px solid #e0e0e0",
-          transition: "all 0.3s ease-in-out",
-          position: "relative",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "4px",
-            height: "100%",
-            backgroundColor: "#000",
-            opacity: 0,
-            transition: "opacity 0.3s ease-in-out",
-          },
-          "&:hover": {
-            borderColor: "#000",
-            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
-            "&::before": {
-              opacity: 1,
-            },
-          },
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          fontWeight: 500,
-        },
-        outlined: {
-          borderColor: "#e0e0e0",
-          color: "#000000",
-          "&:hover": {
-            backgroundColor: "rgba(0, 0, 0, 0.04)",
-          },
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          backgroundImage: "none",
-        },
-        elevation1: {
-          boxShadow:
-            "0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1)",
-        },
-      },
-    },
-    MuiDivider: {
-      styleOverrides: {
-        root: {
-          borderColor: "#e0e0e0",
-        },
-      },
-    },
-    MuiLinearProgress: {
-      styleOverrides: {
-        root: {
-          backgroundColor: "#f5f5f5",
-          borderRadius: 0,
-          height: 6,
-        },
-        bar: {
-          borderRadius: 0,
-          backgroundColor: "#000",
-        },
-      },
-    },
-    MuiAvatar: {
-      styleOverrides: {
-        root: {
-          backgroundColor: "#000",
-          color: "#fff",
-        },
-      },
-    },
-  },
-});
+import enhancedBlackAndWhiteTheme from "../../assets/enhancedBlackAndWhiteTheme";
 
-const dashboardStats = [
-  { label: "Total Jobs", value: 0, icon: <BusinessIcon /> },
-  { label: "Total Applicants", value: 0, icon: <PeopleIcon /> },
-  { label: "Active Jobs", value: 0, icon: <DashboardIcon /> },
-];
-
-function CompanyDashboard() {
+function CompanyJobs() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState(dashboardStats);
-  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [actionToConfirm, setActionToConfirm] = useState(null);
+
+  const navigate = useNavigate();
+  const userId = localStorage.getItem("userId");
+
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        const response = await getCompanyJob(userId);
+        setJobs(response.data);
+      } catch (error) {
+        console.error("Error in fetching jobs:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchJobs();
+  }, [userId]);
+
+  const totalJobs = jobs.length;
+  const totalApplicants = jobs.reduce(
+    (sum, job) => sum + job.applicants.length,
+    0
+  );
+  const activeJobs = jobs.filter((job) => !job.isHidden).length;
+
+  const selectedJob = jobs.find((job) => job._id === selectedJobId);
+  const isHidden = selectedJob?.isHidden;
 
   const handleOpen = (event, jobId) => {
     setAnchorEl(event.currentTarget);
@@ -287,116 +101,33 @@ function CompanyDashboard() {
   const handleDelete = async () => {
     handleClose();
     if (selectedJobId) {
-      await deleteJob(selectedJobId);
-      setJobs((prevJobs) =>
-        prevJobs.filter((job) => job._id !== selectedJobId)
-      );
-      setStats((prevState) =>
-        prevState.map((stat) => {
-          if (stat.label === "Total Jobs") {
-            return { ...stat, value: stat.value - 1 };
-          } else if (stat.label === "Total Applicants") {
-            if (stat.value <= 0) {
-              return { ...stat, value: 0 };
-            } else return { ...stat, value: stat.value - 1 };
-          } else if (stat.label === "Active Jobs") {
-            return { ...stat, value: stat.value - 1 };
-          } else {
-            return stat;
-          }
-        })
-      );
-    }
-  };
-
-  const userId = localStorage.getItem("userId");
-  const fetchJobs = async () => {
-    try {
-      setLoading(true);
-      const response = await getCompanyJob(userId);
-      setJobs(response.data);
-
-      if (response.data) {
-        let totalApplicants = 0;
-        for (let i = 0; i < response.data.length; i++) {
-          totalApplicants =
-            totalApplicants + response.data[i].applicants.length;
-        }
-        let activeJobs = 0;
-        for (let i = 0; i < response.data.length; i++) {
-          if (!response.data[i].isHidden) {
-            activeJobs = activeJobs + 1;
-          }
-        }
-        setStats([
-          {
-            label: "Total Jobs",
-            value: response.data.length,
-            icon: <BusinessIcon />,
-          },
-          {
-            label: "Total Applicants",
-            value: totalApplicants,
-            icon: <PeopleIcon />,
-          },
-          {
-            label: "Active Jobs",
-            value: activeJobs,
-            icon: <DashboardIcon />,
-          },
-        ]);
+      try {
+        await deleteJob(selectedJobId);
+        setJobs((prevJobs) =>
+          prevJobs.filter((job) => job._id !== selectedJobId)
+        );
+      } catch (error) {
+        console.error("Error deleting job:", error);
       }
-    } catch (error) {
-      console.error("Error fetching company jobs:", error);
-    } finally {
-      setLoading(false);
     }
   };
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-  const selectedJob = jobs.find((job) => job._id === selectedJobId);
-  const isHidden = selectedJob?.isHidden;
+
   const handleVisible = async (jobId, currentState) => {
     try {
-      console.log(jobId, currentState);
-
       const res = currentState ? await unhideJob(jobId) : await hideJob(jobId);
-
-      console.log(jobId, currentState);
-
       if (res.status === 200) {
         setJobs((prev) =>
-          prev.map((job) => {
-            if (job._id === jobId) {
-              return { ...job, isHidden: !currentState };
-            }
-            return job;
-          })
-        );
-
-        setStats((prevState) =>
-          prevState.map((stat) => {
-            if (stat.label === "Active Jobs") {
-              return {
-                ...stat,
-                value: currentState ? stat.value + 1 : stat.value - 1,
-              };
-            }
-            return stat;
-          })
+          prev.map((job) =>
+            job._id === jobId ? { ...job, isHidden: !currentState } : job
+          )
         );
       }
-
       handleClose();
     } catch (error) {
-      console.error(error);
+      console.error("Error toggling visibility:", error);
     }
   };
 
-  {
-    /* Dialog */
-  }
   const handleOpenConfirm = (action) => {
     setActionToConfirm(action);
     setOpenConfirm(true);
@@ -415,6 +146,26 @@ function CompanyDashboard() {
     handleCloseConfirm();
   };
 
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: "100vh",
+          width: "100%",
+          position: "fixed",
+          top: 0,
+          left: 0,
+        }}
+      >
+        <CircularProgress size={80} sx={{ mb: 2, color: "black" }} />
+        <Typography variant="h5">Loading jobs...</Typography>{" "}
+      </Box>
+    );
+  }
   return (
     <ThemeProvider theme={enhancedBlackAndWhiteTheme}>
       <Box sx={{ bgcolor: "#fafafa", minHeight: "100vh", py: 4 }}>
@@ -474,39 +225,103 @@ function CompanyDashboard() {
                 Manage your job postings and track applicant progress
               </Typography>
 
-              <Grid container spacing={3} sx={{ mt: 2 }}>
-                {stats.map((stat, index) => (
-                  <Grid item xs={12} sm={4} key={index}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        p: 2,
-                        border: "1px solid #e0e0e0",
-                        bgcolor: "#fff",
-                        transition: "transform 0.2s ease-in-out",
-                        "&:hover": {
-                          transform: "translateY(-2px)",
-                          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.05)",
-                          borderColor: "#000",
-                        },
-                      }}
-                    >
-                      <Avatar sx={{ bgcolor: "#000", mr: 2 }}>
-                        {stat.icon}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="h5" fontWeight="bold">
-                          {loading ? <Skeleton width={30} /> : stat.value}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {stat.label}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Grid>
-                ))}
-              </Grid>
+              <Box sx={{ display: "flex", gap: 3, flexWrap: "wrap", mt: 2 }}>
+                {/* Total Jobs */}
+                <Box
+                  sx={{
+                    width: "fit-content",
+                    display: "flex",
+                    alignItems: "center",
+                    p: 2,
+                    border: "1px solid #e0e0e0",
+                    bgcolor: "#fff",
+                    transition: "transform 0.2s ease-in-out",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.05)",
+                      borderColor: "#000",
+                    },
+                  }}
+                >
+                  <Avatar
+                    sx={{ bgcolor: "#000", mr: 2, width: 40, height: 40 }}
+                  >
+                    <BusinessIcon sx={{ fontSize: 24 }} />
+                  </Avatar>
+                  <Box sx={{ display: "flex", flexDirection: "column" }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      {totalJobs}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Total Jobs
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Total Applicants */}
+                <Box
+                  sx={{
+                    width: "fit-content",
+                    display: "flex",
+                    alignItems: "center",
+                    p: 2,
+                    border: "1px solid #e0e0e0",
+                    bgcolor: "#fff",
+                    transition: "transform 0.2s ease-in-out",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.05)",
+                      borderColor: "#000",
+                    },
+                  }}
+                >
+                  <Avatar
+                    sx={{ bgcolor: "#000", mr: 2, width: 40, height: 40 }}
+                  >
+                    <PeopleIcon sx={{ fontSize: 24 }} />
+                  </Avatar>
+                  <Box sx={{ display: "flex", flexDirection: "column" }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      {totalApplicants}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Total Applicants
+                    </Typography>
+                  </Box>
+                </Box>
+
+                {/* Active Jobs */}
+                <Box
+                  sx={{
+                    width: "fit-content",
+                    display: "flex",
+                    alignItems: "center",
+                    p: 2,
+                    border: "1px solid #e0e0e0",
+                    bgcolor: "#fff",
+                    transition: "transform 0.2s ease-in-out",
+                    "&:hover": {
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.05)",
+                      borderColor: "#000",
+                    },
+                  }}
+                >
+                  <Avatar
+                    sx={{ bgcolor: "#000", mr: 2, width: 40, height: 40 }}
+                  >
+                    <DashboardIcon sx={{ fontSize: 24 }} />
+                  </Avatar>
+                  <Box sx={{ display: "flex", flexDirection: "column" }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                      {activeJobs}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Active Jobs
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
             </Box>
           </Paper>
 
@@ -539,7 +354,7 @@ function CompanyDashboard() {
               </Box>
 
               <Box sx={{ display: "flex", gap: 2 }}>
-                <Button
+                {/* <Button
                   variant="outlined"
                   startIcon={<SearchIcon />}
                   size="small"
@@ -553,6 +368,7 @@ function CompanyDashboard() {
                 >
                   Filter
                 </Button>
+                 */}
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
@@ -641,7 +457,7 @@ function CompanyDashboard() {
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}
-                  onClick={() => navigate("/company/add-job")}
+                  onClick={() => navigate("/post-job")}
                   sx={{
                     px: 4,
                     py: 1.5,
@@ -654,7 +470,7 @@ function CompanyDashboard() {
             ) : (
               <Grid container spacing={3}>
                 {jobs.map((job) => (
-                  <Grid item xs={12} key={job._id}>
+                  <Grid columns={12} key={job._id}>
                     <Card
                       sx={{
                         opacity: job.isHidden ? 0.5 : 1,
@@ -702,6 +518,7 @@ function CompanyDashboard() {
                                 <Typography
                                   variant="body2"
                                   color="text.secondary"
+                                  component="span"
                                 >
                                   <Badge
                                     badgeContent={job.applicants.length}
@@ -718,6 +535,7 @@ function CompanyDashboard() {
                                     <Typography
                                       variant="body2"
                                       color="text.secondary"
+                                      component="span"
                                       sx={{ mr: 2 }}
                                     >
                                       Applicants
@@ -790,6 +608,11 @@ function CompanyDashboard() {
                               onClose={handleCloseConfirm}
                               aria-labelledby="confirm-dialog-title"
                               aria-describedby="confirm-dialog-description"
+                              BackdropProps={{
+                                style: {
+                                  backgroundColor: "rgba(0, 0, 0, 0.3)",
+                                },
+                              }}
                             >
                               <DialogTitle id="confirm-dialog-title">
                                 <Box
@@ -816,7 +639,7 @@ function CompanyDashboard() {
                                       sx={{
                                         fontSize: 45,
                                         color: "#10B981",
-                                        bgcolor: "#E7F8F2",
+                                        bgcolor: "rgba(255, 0, 0, 0.1)",
                                         borderRadius: "50%",
                                         p: 1,
                                       }}
@@ -964,7 +787,11 @@ function CompanyDashboard() {
                       <Divider sx={{ mx: 2 }} />
 
                       <CardActions
-                        sx={{ px: 2, py: 1.5, justifyContent: "space-between" }}
+                        sx={{
+                          px: 2,
+                          py: 1.5,
+                          justifyContent: "space-between",
+                        }}
                       >
                         <Box>
                           <Typography variant="caption" color="text.secondary">
@@ -979,9 +806,7 @@ function CompanyDashboard() {
                             <Button
                               size="small"
                               startIcon={<EditIcon />}
-                              onClick={() =>
-                                navigate(`/company/job/${job._id}/edit`)
-                              }
+                              onClick={() => navigate(`/jobs/${job._id}/edit`)}
                             >
                               Edit
                             </Button>
@@ -992,7 +817,7 @@ function CompanyDashboard() {
                               size="small"
                               startIcon={<VisibilityIcon />}
                               onClick={() =>
-                                navigate(`/company/job/${job._id}/applicants`)
+                                navigate(`/jobs/${job._id}/applicants`)
                               }
                             >
                               View Applicants
@@ -1012,4 +837,4 @@ function CompanyDashboard() {
   );
 }
 
-export default CompanyDashboard;
+export default CompanyJobs;

@@ -24,11 +24,11 @@ const userSchema = new mongoose.Schema(
     },
     dateOfBirth: {
       type: Date,
-      required: true
+      required: true,
     },
     mobileNumber: {
       type: String,
-      required: true
+      required: true,
     },
     password: {
       type: String,
@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
     },
     isVerified: {
       type: Boolean,
-      default: false
+      default: false,
     },
     verificationToken: String,
     verificationTokenExpiresAt: Date,
@@ -49,27 +49,42 @@ const userSchema = new mongoose.Schema(
       default: "user",
     },
     /* Using AI to get This Info  */
-    education: [String],
-    experience: [String],
+    education: [
+      {
+        school: { type: String, required: true },
+        degree: { type: String },
+        fieldOfStudy: { type: String },
+        from: { type: Date },
+        to: { type: Date },
+        description: { type: String },
+      },
+    ],
+    experience: [
+      {
+        title: { type: String, required: true },
+        company: { type: String, required: true },
+        from: { type: Date, required: true },
+        to: { type: Date },
+        current: { type: Boolean, default: false },
+        description: { type: String },
+      },
+    ],
+
     trainingCourses: [String],
     skills: [String],
-    languages: [String]
+    languages: [String],
 
-    , profilepic: {
+    profilepic: {
       type: Object,
       default: {
         url: "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png",
-        publicid: null
-      }
+        publicid: null,
+      },
     },
     bio: String,
-
   },
   {
     timestamps: true,
-
   }
-)
-  ;
-
+);
 export default mongoose.model("User", userSchema);

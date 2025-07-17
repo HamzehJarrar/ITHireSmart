@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Button, Typography } from "@mui/material";
-import Ellipse from "../assets/Ellipse.png";
-import Vector from "../assets/Vector.png";
+import Ellipse from "../../assets/Ellipse.png";
+import Vector from "../../assets/Vector.png";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 

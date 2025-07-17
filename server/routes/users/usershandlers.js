@@ -1,26 +1,59 @@
 import jwt, { decode } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
-import User from "../../models/User.js"
-import Company from "../../models/Company.js"
-import Training from "../../models/Training.js"
-import Course from "../../models/Course.js"
-import Job from "../../models/Job.js"
+import User from "../../models/User.js";
+import Company from "../../models/Company.js";
+import Training from "../../models/Training.js";
+import Course from "../../models/Course.js";
+import Job from "../../models/Job.js";
 import config from "config";
 import { validationResult } from "express-validator";
 import Joi from "joi";
-import path from "path"
+import path from "path";
 import { fileURLToPath } from "url";
-import * as cloudinarys from "../../utils/cloudinary.js"
-import fs from "fs"
+import * as cloudinarys from "../../utils/cloudinary.js";
+import fs from "fs";
 import crypto from "crypto";
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendResetSuccessEmail,
-} from "../../mailtrap/emails.js";
+} from "../../nodemailer/sendEmail.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+export async function resetPassword(req, res) {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  try {
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpiresAt: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired reset token." });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpiresAt = undefined;
+    await user.save();
+
+    await sendResetSuccessEmail(user.email);
+    res.status(200).json({
+      success: true,
+      message: "Password reset link sent to your email",
+    });
+  } catch (error) {
+    console.log("Error in forgotPassword ", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
 
 // -----------------------
 //  registration
@@ -50,7 +83,7 @@ export async function register(req, res) {
     const hashedpass = await bcrypt.hash(password, salt);
 
     const verificationToken = crypto.randomBytes(32).toString("hex");
-    const verificationTokenExpiresAt = Date.now() + 60 * 60 * 1000; // 1 hour..
+    const verificationTokenExpiresAt = Date.now() + 60 * 60 * 1000; // 1 hour
 
     user = new User({
       firstName,
@@ -75,38 +108,36 @@ export async function register(req, res) {
       },
     };
     // Send verification email
-    const verificationURL = `${process.env.BASE_URL}/api/users/verify-email?token=${verificationToken}`;
+    const verificationURL = `http://${process.env.FRONTEND_URL}/ConfirmEmail?token=${verificationToken}`;
     try {
       await sendVerificationEmail(email, verificationURL);
     } catch (mailErr) {
-      // *** might added later ,, to roll back the user if verify failed to send
       // await User.findByIdAndDelete(user._id);
       return res.status(500).json({
         errors: [{ msg: "Registration succeeded but sending email failed." }],
       });
     }
     return res.status(201).json({
-      message: "Registration successful. Please check ur email to verify ur account.",
+      message:
+        "Registration successful. Please check ur email to verify ur account.",
     });
-    // jwt.sign(
-    //   payload,
-    //   config.get("jwtSecret"),
-    //   { expiresIn: "5days" },
-    //   (err, token) => {
-    //     if (err) {
-    //       throw err;
-    //     } else {
-    //       res.json({ token });
-    //     }
-    //   }
-    // );
+    jwt.sign(
+      payload,
+      config.get("jwtSecret"),
+      { expiresIn: "5days" },
+      (err, token) => {
+        if (err) {
+          throw err;
+        } else {
+          res.json({ token });
+        }
+      }
+    );
   } catch (error) {
     console.error(error.message);
     res.status(500).send(error.message);
   }
 }
-;
-
 // -----------------------
 //  Email verification
 // -----------------------
@@ -136,9 +167,6 @@ export async function verifyEmail(req, res) {
   }
 }
 
-// -----------------------
-//  FORGOT PASSWORD
-// -----------------------
 // POST /api/users/forgot-password
 export async function forgotPassword(req, res) {
   const { email } = req.body;
@@ -146,7 +174,10 @@ export async function forgotPassword(req, res) {
   try {
     const user = await User.findOne({ email });
     if (!user) {
-      return res.json({ message: "If that email is registered, you’ll receive reset instructions." });
+      return res.json({
+        message:
+          "If that email is registered, you’ll receive reset instructions.",
+      });
     }
 
     const resetToken = crypto.randomBytes(20).toString("hex");
@@ -159,46 +190,17 @@ export async function forgotPassword(req, res) {
 
     const resetURL = `${process.env.BASE_URL}/api/users/reset-password?token=${resetToken}`;
     await sendPasswordResetEmail(email, resetURL);
-
   } catch (error) {
     console.log("Error in forgotPassword ", error);
     res.status(400).json({ success: false, message: error.message });
   }
 }
-
 
 // -----------------------
 //  RESET PASSWORD
 // -----------------------
 // POST /api/users/reset-password?token=...
-export async function resetPassword(req, res) {
-  const { token } = req.params;
-  const { password } = req.body;
 
-  try {
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpiresAt: { $gt: Date.now() }
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired reset token." });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(newPassword, salt);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpiresAt = undefined;
-    await user.save();
-
-    await sendResetSuccessEmail(user.email);
-    res.status(200).json({ success: true, message: "Password reset link sent to your email" });
-  } catch (error) {
-    console.log("Error in forgotPassword ", error);
-    res.status(400).json({ success: false, message: error.message });
-  }
-}
-// export async function resetPassword(req, res) {
 //   const { token } = req.query;
 //   const { password: newPassword } = req.body;
 
@@ -239,17 +241,13 @@ export async function login(req, res) {
   try {
     let user = await User.findOne({ email });
     if (!user) {
-      return res
-        .status(400)
-        .json({ errors: [{ msg: "Invalid Credentials" }] });
+      return res.status(400).json({ errors: [{ msg: "Invalid Credentials" }] });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
-      return res
-        .status(400)
-        .json({ errors: [{ msg: "Invalid Credentials" }] });
+      return res.status(400).json({ errors: [{ msg: "Invalid Credentials" }] });
     }
     const payload = {
       user: {
@@ -282,8 +280,6 @@ export async function login(req, res) {
     res.status(500).send(error.message);
   }
 }
-;
-
 
 export async function myprofile(req, res) {
   try {
@@ -295,68 +291,58 @@ export async function myprofile(req, res) {
   }
 }
 
-
-
-
-
 function validateubdateinfo(obj) {
   const schema = Joi.object({
     firstName: Joi.string().trim().min(3).max(20),
     lastName: Joi.string().trim().min(3).max(20),
-    password: Joi.string().min(8).pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/)
-  })
-  return schema.validate(obj)
+    password: Joi.string()
+      .min(8)
+      .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/),
+  });
+  return schema.validate(obj);
 }
 
 export async function editInfo(req, res) {
-  const { error } = validateubdateinfo(req.body)
+  const { error } = validateubdateinfo(req.body);
   if (error) {
-    return res.status(400).json({ msg: error.details[0].message })
+    return res.status(400).json({ msg: error.details[0].message });
   }
   if (req.body.password) {
-    const salt = await bcrypt.genSalt(10)
-    req.body.password = await bcrypt.hash(req.body.password, salt)
+    const salt = await bcrypt.genSalt(10);
+    req.body.password = await bcrypt.hash(req.body.password, salt);
   }
 
-  const updateuser = await User.findByIdAndUpdate(req.user.id, {
-    $set: {
-      firstName: req.body.firstName,
-      lastName: req.body.lastName,
-      password: req.body.password,
-    }
-  }, { new: true }).select("-password");
-  res.status(200).json(updateuser)
-
-
-
-
-
-
+  const updateuser = await User.findByIdAndUpdate(
+    req.user.id,
+    {
+      $set: {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        password: req.body.password,
+      },
+    },
+    { new: true }
+  ).select("-password");
+  res.status(200).json(updateuser);
 }
-
 
 export async function getcount(req, res) {
   try {
-    const [
-      usercount,
-      companycount,
-      jobcount,
-      traincount,
-      coursecount
-    ] = await Promise.all([
-      User.countDocuments(),
-      Company.countDocuments(),
-      Job.countDocuments(),
-      Training.countDocuments(),
-      Course.countDocuments()
-    ]);
+    const [usercount, companycount, jobcount, traincount, coursecount] =
+      await Promise.all([
+        User.countDocuments(),
+        Company.countDocuments(),
+        Job.countDocuments(),
+        Training.countDocuments(),
+        Course.countDocuments(),
+      ]);
 
     return res.status(200).json({
       usercount,
       companycount,
       jobcount,
       traincount,
-      coursecount
+      coursecount,
     });
   } catch (error) {
     console.error(error.message);
@@ -364,17 +350,14 @@ export async function getcount(req, res) {
   }
 }
 
-
-
 export async function uploadphoto(req, res) {
   if (!req.file) {
-    return res.status(404).json({ msg: "error upload photo" })
+    return res.status(404).json({ msg: "error upload photo" });
   }
   try {
     const filepath = path.join(__dirname, `../../images/${req.file.filename}`);
 
     const result = await cloudinarys.cloudinaryUpload(filepath);
-
 
     const user = await User.findById(req.user.id);
 
@@ -385,49 +368,83 @@ export async function uploadphoto(req, res) {
     user.profilepic = {
       url: result.secure_url,
       publicid: result.public_id,
-    }
+    };
 
     await user.save();
     res.status(200).json({
-
       msg: "photo updated seccessfully",
       url: result.secure_url,
       publicid: result.public_id,
-
     });
     fs.unlinkSync(filepath);
-
-  }
-
-  catch (error) {
+  } catch (error) {
     console.error(error);
     res.status(545).json({ msg: "error upload image" });
   }
-
 }
-
 
 export async function getphoto(req, res) {
   try {
-    const user = await User.findById(req.user.id)
+    const user = await User.findById(req.user.id);
     if (!user) {
-      res.status(400).json({ msg: "user not found" })
+      res.status(400).json({ msg: "user not found" });
     } else {
       res.status(200).json({ url: user.profilepic.url });
-
-
     }
   } catch {
     res.status(500).json({ message: "Server error" });
   }
 }
 
+
 export async function getAllUsers(req, res) {
   try {
-    const users = await User.find().select("-password"); 
+    const users = await User.find().select("-password");
     res.status(200).json(users);
   } catch (error) {
     console.error(error.message);
-    res.status(500).json({ msg: "Failed to fetch users" });
+      res.status(500).json({ msg: "Failed to fetch users" });
+    }
   }
-}
+  
+  export async function changePassword(req, res) {
+    const { oldPassword, newPassword } = req.body;
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(400).json({ msg: "User not found" });
+      }
+  
+      const isMatch = await bcrypt.compare(oldPassword, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ msg: "The old password is not correct" });
+      }
+  
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(newPassword, salt);
+      await user.save();
+  
+      const payload = {
+        user: {
+          id: user.id,
+          role: user.role,
+        },
+      };
+  
+      jwt.sign(
+        payload,
+        config.get("jwtSecret"),
+        { expiresIn: "5days" },
+        (err, token) => {
+          if (err) throw err;
+          res.json({
+            message: "Password updated successfully.",
+            token,
+          });
+        }
+      );
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).json({ msg: "Server error" });
+    }
+  }

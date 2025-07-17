@@ -28,6 +28,16 @@ const TrainingSchema = new Schema(
     },
     trainingType: {
       type: String,
+      enum: ["Online", "Company", "Hybrid"],
+      required: true,
+    },
+    Duration: {
+      type: String,
+      required: true,
+    },
+    isHidden: {
+      type: Boolean,
+      default: false,
     },
     trainingDescription: {
       type: String,
@@ -35,11 +45,32 @@ const TrainingSchema = new Schema(
     },
     capacity: {
       type: Number,
+      required: true,
+      min: 1,
     },
     topicsCovered: {
-      type: [String],
+      type: [String] ,
       required: true,
     },
+    Requirements: {
+      type: [String] ,
+      required: true,
+    },
+    enrolledUsers: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+    acceptedParticipants: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    ],
+    rejectedParticipants: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    ],
+    pendingParticipants: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    ],
   },
   { timestamps: true }
 );

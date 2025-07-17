@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
     });
     res.json(response.data);
   } catch (error) {
-    // إضافة تسجيل كامل للخطأ
+    
     console.error("Error fetching courses from Udemy:", error.response ? error.response.data : error.message);
     res.status(500).json({ message: "Failed to fetch courses from Udemy", error: error.response ? error.response.data : error.message });
   }

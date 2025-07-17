@@ -28,6 +28,14 @@ const jobSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    from: {
+      type: Date,
+      required: true,
+    },
+    to: {
+      type: Date,
+      required: true,
+    },
     jobType: {
       type: String,
       required: true,
@@ -60,7 +68,13 @@ const jobSchema = new mongoose.Schema(
         appliedAt: { type: Date, default: Date.now },
       },
     ],
-    
+    recommendedApplicants: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        recommendedAt: { type: Date, default: Date.now }, 
+        rank: Number, 
+      },
+    ],
   },
   { timestamps: true }
 );
