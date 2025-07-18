@@ -5,7 +5,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import LockOutlineIcon from "@mui/icons-material/LockOutline";
 const Settings = () => {
   const navigate = useNavigate();
-
+  const role = localStorage.getItem("role");
   return (
     <Box
       sx={{
@@ -64,7 +64,13 @@ const Settings = () => {
       >
         {/* Profile Card */}
         <Box
-          onClick={() => navigate("/UserSetting")}
+          onClick={() => {
+            if (role === "company") {
+              navigate("/companyprofilepage");
+            } else {
+              navigate("/profile");
+            }
+          }}
           sx={{
             bgcolor: "white",
             p: 4,

@@ -81,7 +81,7 @@ const CompanyLogin = () => {
             const data = res.data;
             localStorage.setItem("role", data.role || "company");
             localStorage.setItem("email", data.email);
-            localStorage.setItem("userId", data.id);
+            localStorage.setItem("companyId", data.id);
             localStorage.setItem("companyName", data.companyName);
             localStorage.setItem("token", data.token);
             

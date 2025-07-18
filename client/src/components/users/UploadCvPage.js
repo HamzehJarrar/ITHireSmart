@@ -7,6 +7,9 @@ const UploadCvPage = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  const userId = localStorage.getItem("userId");
+  console.log("User ID:", userId);
+
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
     setMessage("");
@@ -22,7 +25,14 @@ const UploadCvPage = () => {
       setLoading(true);
       setMessage("");
 
-      const res = await uploadCv(formData);
+      const res = await axios.post("/api/cv/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+
       setMessage("CV processed and profile updated successfully.");
 
     } catch (err) {

@@ -115,7 +115,21 @@ const CompanyRegister = () => {
                 return;
               }
 
+              if (res.data?.token) {
+                // خزّن القيم المهمة هنا:
+                localStorage.setItem("token", res.data.token);
+                localStorage.setItem("companyToken", res.data.token);
+                localStorage.setItem("userId", res.data.userId); // لازم backend يرجع userId في رد التسجيل
+                localStorage.setItem("role", "company");
+
+                navigate("/verify-email", {
+                  state: { email: values.companyEmail },
+                });
+                return;
+              }
+
               if (res.data?.message) {
+                // لو فقط رسالة بدون توكن، توجه للتحقق
                 navigate("/verify-email", {
                   state: { email: values.companyEmail },
                 });

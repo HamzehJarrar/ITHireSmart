@@ -34,12 +34,12 @@ const ApplicantsPage = () => {
 
   const navigate = useNavigate();
 
-  // استرجاع البيانات المحفوظة عند تحميل الصفحة (لو موجودة)
   useEffect(() => {
     const savedRecommended = localStorage.getItem("recommendedApplicants");
     if (savedRecommended) {
       try {
         setRecommended(JSON.parse(savedRecommended));
+
       } catch {
         localStorage.removeItem("recommendedApplicants");
       }
@@ -52,6 +52,7 @@ const ApplicantsPage = () => {
         setLoading(true);
         const res = await ViewApplicants(jobId);
         setApplicants(res.data);
+        console.log("Fetched applicants:", res.data);
       } catch (error) {
         console.log(error);
       } finally {
@@ -86,7 +87,6 @@ const ApplicantsPage = () => {
     }
   };
 
-  // زر حذف المحفوظات
   const clearSavedRecommendations = () => {
     localStorage.removeItem("recommendedApplicants");
     setRecommended([]);
@@ -215,8 +215,15 @@ const ApplicantsPage = () => {
         ) : (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
             {applicants.map((applicant) => {
-              const name = applicant.user?.firstName || "Unknown Applicant";
-              const email = applicant.user?.email || "No email provided";
+              const user = applicant.user;
+              const name =
+                user?.firstName && user?.lastName
+                  ? `${user.firstName} ${user.lastName}`
+                  : user?.firstName
+                  ? user.firstName
+                  : "Unknown Applicant";
+              const email = user?.email || "No email provided";
+              const profilePic = user?.profilepic?.url;
               const appliedDateObj = new Date(applicant.appliedAt);
               const appliedDate =
                 appliedDateObj.toLocaleDateString() +
@@ -239,7 +246,7 @@ const ApplicantsPage = () => {
                       avatar={
                         <Avatar
                           alt={`${name} Avatar`}
-                          src={applicant.user?.profilepic?.url}
+                          src={profilePic}
                           sx={{
                             width: 56,
                             height: 56,
@@ -247,7 +254,7 @@ const ApplicantsPage = () => {
                             color: "#1976d2",
                           }}
                         >
-                          {!applicant.user?.profilepic?.url && name[0]}
+                          {!profilePic && user?.firstName?.[0]}
                         </Avatar>
                       }
                       title={
@@ -272,19 +279,19 @@ const ApplicantsPage = () => {
                         </Typography>
                       </Box>
 
-                      <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
-                        <Chip
-                          size="small"
-                          label="Information"
-                          icon={<NewspaperIcon fontSize="small" />}
-                          variant="outlined"
-                          clickable
-                          sx={{ p: 1 }}
-                          onClick={() =>
-                            navigate(`/user/${applicant.user._id}`)
-                          }
-                        />
-                      </Box>
+                      {user && (
+                        <Box sx={{ mt: 2, display: "flex", gap: 1 }}>
+                          <Chip
+                            size="small"
+                            label="Information"
+                            icon={<NewspaperIcon fontSize="small" />}
+                            variant="outlined"
+                            clickable
+                            sx={{ p: 1 }}
+                            onClick={() => navigate(`/user/${user._id}`)}
+                          />
+                        </Box>
+                      )}
                     </CardContent>
                   </Card>
                 </Box>
@@ -315,14 +322,21 @@ const ApplicantsPage = () => {
           <Typography>No recommendations found.</Typography>
         ) : (
           <List>
-            {recommended.map((rec) => (
-              <ListItem key={rec._id} alignItems="flex-start" divider>
-                <ListItemText
-                  primary={`${rec.user.firstName} ${rec.user.lastName}`}
-                  secondary={rec.user.email}
-                />
-              </ListItem>
-            ))}
+            {recommended.map((rec) => {
+              const user = rec.user;
+              const name =
+                user?.firstName && user?.lastName
+                  ? `${user.firstName} ${user.lastName}`
+                  : user?.firstName
+                  ? user.firstName
+                  : "Unknown";
+
+              return (
+                <ListItem key={rec._id} alignItems="flex-start" divider>
+                  <ListItemText primary={name} secondary={user.email} />
+                </ListItem>
+              );
+            })}
           </List>
         )}
       </Drawer>

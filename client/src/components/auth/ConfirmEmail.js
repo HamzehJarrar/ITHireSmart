@@ -33,7 +33,8 @@ const ConfirmEmail = () => {
       `http://localhost:5000/api/users/verify-email?token=${token}`
     );
 
-verifyEmail(token)
+    verifyEmail(token)
+
       .then((data) => {
         console.log("API Response:", data); 
         if (data.userId) {

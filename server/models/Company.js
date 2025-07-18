@@ -13,6 +13,7 @@ const companySchema = new mongoose.Schema(
     contactPosition: { type: String, required: false, default: "" },
     contactPhoneNumber: { type: String, required: false, default: "" },
     password: { type: String, required: true },
+    profilepic: { type: String, default: "" },
     status: {
       type: String,
       enum: ["pending", "approved", "denied"],
@@ -32,6 +33,14 @@ const companySchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    profilepic: {
+  type: {
+    url: { type: String, default: "https://cdn.pixabay.com/photo/2023/02/18/11/00/icon-7797704_640.png" },
+    publicid: { type: String, default: null }
+  },
+  default: undefined
+}
+
   },
   { timestamps: true }
 );

@@ -48,7 +48,7 @@ const CompanyTrainings = () => {
   const [anchorEl, setAnchorEl] = useState(null);
 
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId");
+  const userId = localStorage.getItem("companyId");
 
   useEffect(() => {
     const fetchTrainings = async () => {

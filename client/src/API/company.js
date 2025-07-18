@@ -29,4 +29,7 @@ export const verifyCompany = (companyId, status) =>
 export const getCompanyById = (id) => API.get(`/${id}`);
 
 export const getCompanyProfile = (companyId) =>
-  API.get(`/companies/${companyId}`);
+  API.get(`/profile/${companyId}`);
+
+export const updateCompanyProfile = (companyId, data) =>
+  API.put(`/${companyId}`, data);

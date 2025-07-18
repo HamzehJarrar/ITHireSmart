@@ -12,10 +12,7 @@ router.post("/register", handlers.companyRegister);
 // POST - Login
 router.post(
   "/login",
-  [
-    check("companyEmail", "Please include a valid email").isEmail(),
-    check("password", "Password is required").exists(),
-  ],
+
   handlers.loginCompany
 );
 // GET - Company Profile
@@ -29,5 +26,12 @@ router.put("/verify/:id", auth, checkRole("admin"), handlers.verifyCompany);
 
 // GET - All Companies
 router.get("/", auth, checkRole("admin"), handlers.getAllCompanies);
+
+router.put(
+  "/:companyId",
+  auth,
+  checkRole("company"), 
+  handlers.editCompanyProfile
+);
 
 export default router;

@@ -102,7 +102,7 @@ const ConfirmCompanyEmail = () => {
               color: "white",
               backgroundColor: "#000000ff",
             }}
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/CompanyLogin")}
           >
             Go to Home
           </Button>

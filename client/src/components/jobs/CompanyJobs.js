@@ -62,7 +62,7 @@ function CompanyJobs() {
   const [actionToConfirm, setActionToConfirm] = useState(null);
 
   const navigate = useNavigate();
-  const userId = localStorage.getItem("userId");
+  const userId = localStorage.getItem("companyId");
 
   useEffect(() => {
     const fetchJobs = async () => {

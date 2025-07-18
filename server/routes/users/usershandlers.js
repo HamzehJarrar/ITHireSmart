@@ -166,6 +166,44 @@ export async function register(req, res) {
 
   } catch (error) {
     console.error(error.message);
+    res.status(500).send(error.message);
+  }
+}
+// -----------------------
+//  Email verification
+// -----------------------
+export async function verifyEmail(req, res) {
+  const { token } = req.query;
+  try {
+    const user = await User.findOne({
+      verificationToken: token,
+      verificationTokenExpiresAt: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired verification token." });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpiresAt = undefined;
+    await user.save();
+
+    return res.json({ msg: "Email verified successfully", userId: user._id }); 
+  } catch (err) {
+    console.error("Email verification error:", err);
+    return res.status(500).json({ message: "Server error." });
+  }
+}
+
+// POST /api/users/forgot-password
+export async function forgotPassword(req, res) {
+  const { email } = req.body;
+
+  } catch (error) {
+    console.error(error.message);
     return res.status(500).send("Server error during registration");
   }
 }

@@ -46,7 +46,7 @@ export async function showalljobs(req, res) {
       .populate("user", "profilepic firstName lastName");
 
     res.json(visibleJobs);
-  } catch (error) {   
+  } catch (error) {
     console.error(error.message);
     res.status(500).send(error.message);
   }
@@ -206,7 +206,7 @@ export async function viewApplicants(req, res) {
   try {
     const job = await Job.findById(req.params.jobId).populate(
       "applicants.user",
-      "firstName email profilepic"
+      "firstName lastName email profilepic"
     );
 
     if (!job) {
@@ -302,7 +302,7 @@ Return your answer in this JSON format:
     console.log("Full OpenAI response:", completion);
 
     const responseText = completion.choices?.[0]?.message?.content?.trim();
-    
+
     console.log("OpenAI response text:", responseText);
     if (!responseText) {
       throw new Error("No response text from OpenAI");

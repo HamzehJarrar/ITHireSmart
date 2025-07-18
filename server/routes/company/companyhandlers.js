@@ -115,7 +115,7 @@ export async function loginCompany(req, res) {
     if (company.status !== "approved") {
       return res.status(403).json({ msg: "Company not approved yet" });
     }
-    
+
     const payload = {
       user: {
         id: company._id,
@@ -207,6 +207,7 @@ export async function verifyCompanyEmail(req, res) {
     res.status(200).json({
       message: "Company email verified successfully.",
       token: tokenJWT,
+      userId: company._id,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -250,3 +251,28 @@ export async function getAllCompanies(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+
+export const editCompanyProfile = async (req, res) => {
+  const { companyId } = req.params;
+
+  if (req.user.id !== companyId && req.user.role !== "admin") {
+    return res.status(403).json({ msg: "Unauthorized" });
+  }
+
+  try {
+    const updatedCompany = await Company.findByIdAndUpdate(
+      companyId,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedCompany) {
+      return res.status(404).json({ msg: "Company not found" });
+    }
+
+    res.json(updatedCompany);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ msg: "Server error" });
+  }
+};

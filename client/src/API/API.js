@@ -39,4 +39,5 @@ export const uploadCv = (formData) => {
 };
 
 export const verifyEmail = (token) =>
-  API.get(`/users/verify-email?token=${token}`).then((res)=>res.data);
+  API.get(`/users/verify-email?token=${token}`).then((res) => res.data);
+
