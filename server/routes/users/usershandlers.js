@@ -13,6 +13,11 @@ import { fileURLToPath } from "url";
 import * as cloudinarys from "../../utils/cloudinary.js";
 import fs from "fs";
 import crypto from "crypto";
+import mongoose from "mongoose";
+import Profile from "../../models/Profile.js";
+import { OpenAI } from "openai";
+
+
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,
@@ -70,10 +75,11 @@ export async function register(req, res) {
     role,
   } = req.body;
 
-  email = email.toLowerCase();
+  email = email.trim().toLowerCase();
+
   try {
-    let user = await User.findOne({ email });
-    if (user) {
+    let existingUser = await User.findOne({ email });
+    if (existingUser) {
       return res
         .status(400)
         .json({ errors: [{ param: "email", msg: "Email already exists" }] });
@@ -83,9 +89,9 @@ export async function register(req, res) {
     const hashedpass = await bcrypt.hash(password, salt);
 
     const verificationToken = crypto.randomBytes(32).toString("hex");
-    const verificationTokenExpiresAt = Date.now() + 60 * 60 * 1000; // 1 hour
+    const verificationTokenExpiresAt = Date.now() + 60 * 60 * 1000;
 
-    user = new User({
+    const user = new User({
       firstName,
       lastName,
       email,
@@ -101,26 +107,102 @@ export async function register(req, res) {
     });
 
     await user.save();
+
+    const profile = new Profile({
+      user: user.id,
+      company: "",
+      location: location || "",
+      status: "active",
+      skills: [],
+      bio: "",
+      experience: [],
+      education: [],
+    });
+
+    await profile.save();
+
+    const verificationURL = `http://${process.env.FRONTEND_URL}/ConfirmEmail?token=${verificationToken}`;
+    try {
+      await sendVerificationEmail(firstName, email, verificationURL);
+    } catch (mailErr) {
+      // حذف المستخدم والبروفايل لو فشل إرسال الإيميل
+      await User.findByIdAndDelete(user._id);
+      await Profile.deleteOne({ user: user._id });
+      return res.status(500).json({
+        errors: [{ msg: "Registration succeeded but sending email failed." }],
+      });
+    }
+
+    // إنشاء JWT والرد معاه
     const payload = {
       user: {
         id: user.id,
         role: user.role,
       },
     };
-    // Send verification email
-    const verificationURL = `http://${process.env.FRONTEND_URL}/ConfirmEmail?token=${verificationToken}`;
-    try {
-      await sendVerificationEmail(email, verificationURL);
-    } catch (mailErr) {
-      // await User.findByIdAndDelete(user._id);
-      return res.status(500).json({
-        errors: [{ msg: "Registration succeeded but sending email failed." }],
-      });
+
+    jwt.sign(
+      payload,
+      config.get("jwtSecret"),
+      { expiresIn: "5days" },
+      (err, token) => {
+        if (err) {
+          console.error(err);
+          return res.status(500).json({ errors: [{ msg: "Token generation failed" }] });
+        } else {
+          return res.status(201).json({
+            token,
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilepic: user.profilepic,
+            message: "Registration successful. Please check your email to verify your account.",
+          });
+        }
+      }
+    );
+
+  } catch (error) {
+    console.error(error.message);
+    return res.status(500).send("Server error during registration");
+  }
+}
+
+// -----------------------
+//  login
+// -----------------------
+export async function login(req, res) {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  let { email, password } = req.body;
+  email = email.toLowerCase();
+  try {
+    let user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ errors: [{ msg: "Invalid Credentials" }] });
     }
-    return res.status(201).json({
-      message:
-        "Registration successful. Please check ur email to verify ur account.",
-    });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.status(400).json({ errors: [{ msg: "Invalid Credentials" }] });
+    }
+
+    if (user.role === "none") {
+      return res.status(403).json({ msg: "Your account is disabled." });
+    }
+    const payload = {
+      user: {
+        id: user.id,
+        role: user.role,
+      },
+    };
+
     jwt.sign(
       payload,
       config.get("jwtSecret"),
@@ -129,7 +211,15 @@ export async function register(req, res) {
         if (err) {
           throw err;
         } else {
-          res.json({ token });
+          res.json({
+            token,
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            profilepic: user.profilepic,
+          });
         }
       }
     );
@@ -138,6 +228,7 @@ export async function register(req, res) {
     res.status(500).send(error.message);
   }
 }
+
 // -----------------------
 //  Email verification
 // -----------------------
@@ -160,7 +251,12 @@ export async function verifyEmail(req, res) {
     user.verificationTokenExpiresAt = undefined;
     await user.save();
 
-    return res.json({ message: "Email verified successfully." });
+    return res.json({
+      message: "Email verified successfully.",
+      userId: user.id
+    },
+
+    );
   } catch (err) {
     console.error("Email verification error:", err);
     return res.status(500).json({ message: "Server error." });
@@ -231,55 +327,6 @@ export async function forgotPassword(req, res) {
 // -----------------------
 //  login
 // -----------------------
-export async function login(req, res) {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-  let { email, password } = req.body;
-  email = email.toLowerCase();
-  try {
-    let user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ errors: [{ msg: "Invalid Credentials" }] });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(400).json({ errors: [{ msg: "Invalid Credentials" }] });
-    }
-    const payload = {
-      user: {
-        id: user.id,
-        role: user.role,
-      },
-    };
-    jwt.sign(
-      payload,
-      config.get("jwtSecret"),
-      { expiresIn: "5days" },
-      (err, token) => {
-        if (err) {
-          throw err;
-        } else {
-          res.json({
-            token,
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            profilepic: user.profilepic,
-          });
-        }
-      }
-    );
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).send(error.message);
-  }
-}
 
 export async function myprofile(req, res) {
   try {
@@ -396,55 +443,175 @@ export async function getphoto(req, res) {
   }
 }
 
+export async function changePassword(req, res) {
+  const { oldPassword, newPassword } = req.body;
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(400).json({ msg: "User not found" });
+    }
 
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: "The old password is not correct" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    const payload = {
+      user: {
+        id: user.id,
+        role: user.role,
+      },
+    };
+
+    jwt.sign(
+      payload,
+      config.get("jwtSecret"),
+      { expiresIn: "5days" },
+      (err, token) => {
+        if (err) throw err;
+        res.json({
+          message: "Password updated successfully.",
+          token,
+        });
+      }
+    );
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).json({ msg: "Server error" });
+  }
+}
+
+// -----------------------
+//   get all users for admin dashboard (show all users)
+// -----------------------
 export async function getAllUsers(req, res) {
   try {
     const users = await User.find().select("-password");
     res.status(200).json(users);
   } catch (error) {
-    console.error(error.message);
-      res.status(500).json({ msg: "Failed to fetch users" });
-    }
+    console.error("getAllUsers error:", error.message);
+    res.status(500).json({ msg: "Failed to fetch users", error: error.message });
   }
-  
-  export async function changePassword(req, res) {
-    const { oldPassword, newPassword } = req.body;
-    try {
-      const user = await User.findById(req.user.id);
-      if (!user) {
-        return res.status(400).json({ msg: "User not found" });
-      }
-  
-      const isMatch = await bcrypt.compare(oldPassword, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ msg: "The old password is not correct" });
-      }
-  
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(newPassword, salt);
-      await user.save();
-  
-      const payload = {
-        user: {
-          id: user.id,
-          role: user.role,
+}
+// -----------------------
+//  get users by id for admin dashboard (view user details)
+// -----------------------
+export async function getUserById(req, res) {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ msg: "Invalid user ID" });
+  }
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ msg: "User not found" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("getUserById error:", error.message);
+    res.status(500).json({ msg: "Failed to fetch user", error: error.message });
+  }
+}
+// -----------------------
+//  Enables or disables user account for admin dashboard.
+// -----------------------
+export async function toggleUserStatus(req, res) {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ msg: "User not found" });
+
+    user.role = user.role === "none" ? "user" : "none";
+
+    await user.save();
+
+    res.status(200).json({
+      msg: `User account has been ${user.role === "none" ? "disabled" : "enabled"}`,
+      role: user.role
+    });
+  } catch (error) {
+    console.error("toggleUserStatus error:", error.message);
+    res.status(500).json({ msg: "Server error while toggling status", error: error.message });
+  }
+}
+
+
+// -----------------------
+//  uploadCv CV
+// -----------------------
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function uploadCv(req, res) {
+
+  try {
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const fileBuffer = req.file.buffer;
+    const base64Data = fileBuffer.toString("base64");
+
+    const result = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `
+            أنت مساعد ذكي. سيتم تزويدك بسيرة ذاتية (CV) مكتوبة داخل صورة.
+
+              أريد منك استخراج المهارات (Skills) فقط من هذا الـ CV.
+
+              الرجاء إرجاع المهارات بشكل قائمة مفصولة بفواصل فقط مثل:
+              JavaScript, Node.js, Python, React, Teamwork
+`,
         },
-      };
-  
-      jwt.sign(
-        payload,
-        config.get("jwtSecret"),
-        { expiresIn: "5days" },
-        (err, token) => {
-          if (err) throw err;
-          res.json({
-            message: "Password updated successfully.",
-            token,
-          });
-        }
-      );
-    } catch (error) {
-      console.error(error.message);
-      res.status(500).json({ msg: "Server error" });
-    }
+        {
+          role: "user",
+          content: [
+            {
+              type: "image_url",
+              image_url: {
+                url: `data:${req.file.mimetype};base64,${base64Data}`,
+              },
+            },
+          ],
+        },
+      ],
+      max_tokens: 300,
+    });
+
+    const aiResponse = result.choices[0].message.content;
+
+    // 2. استخراج skills من النص (نفترض مفصولين بفواصل أو أسطر)
+    const skills = aiResponse
+      .split(/[\n,]+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 1);
+
+    // 3. تحديث user profile (مثلاً بإضافة skills للـ user)
+    const userId = req.body.userId;
+    await User.findByIdAndUpdate(userId, {
+      $set: { skills },
+    });
+
+    return res.status(200).json({
+      message: "CV processed and skills updated.",
+      extractedSkills: skills,
+    });
+  } catch (error) {
+    console.error("CV processing error:", error);
+    return res.status(500).json({ message: "Failed to process CV" });
   }
+}
