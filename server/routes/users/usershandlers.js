@@ -673,46 +673,5 @@ export async function viewJobApplications(req, res) {
   }
 }
 
-export async function viewCourseApplications(req, res){
-  try {
-    const userId = req.params.userID; 
 
-    const courses = await Course.find({ "applicants.user": userId }).select("courseTitle applicants");
 
-    const filtered = courses.map(course => {
-      const applicant = course.applicants.find(app => app.user.toString() === userId);
-      return {
-        courseTitle: course.courseTitle,
-        appliedAt: applicant?.appliedAt,
-        status: applicant?.status || "pending"
-      };
-    });
-
-    res.json(filtered);
-  } catch (error) {
-    console.error("Error fetching course applications:", error.message);
-    res.status(500).json({ msg: "Server error", error: error.message });
-  }
-}
-
-export async function viewTrainingApplications(req, res) {
-  try {
-    const userId = req.params.userID; 
-
-    const trainings = await Training.find({ "applicants.user": userId }).select("trainingTitle applicants");
-
-    const filtered = trainings.map(training => {
-      const applicant = training.applicants.find(app => app.user.toString() === userId);
-      return {
-        trainingTitle: training.trainingTitle,
-        appliedAt: applicant?.appliedAt,
-        status: applicant?.status || "pending"
-      };
-    });
-
-    res.json(filtered);
-  } catch (error) {
-    console.error("Error fetching training applications:", error.message);
-    res.status(500).json({ msg: "Server error", error: error.message });
-  }
-}
