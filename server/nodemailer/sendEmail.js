@@ -7,13 +7,17 @@ import { transporter } from "./nodemailer.config.js";
 
 const sender = `"ITHireSmart" <${process.env.SMTP_USER}>`;
 
-export const sendVerificationEmail = async (email, verificationURL) => {
+export const sendVerificationEmail = async (firstName,email, verificationURL) => {
     try {
+        const personalizedHTML = VERIFICATION_EMAIL_TEMPLATE
+            .replace(/%%VERIFICATION_URL%%/g, verificationURL)
+            .replace(/%%FIRST_NAME%%/g, firstName);
+        
         await transporter.sendMail({
             from: sender,
             to: email,
             subject: "Verify your email",
-            html: VERIFICATION_EMAIL_TEMPLATE.replace(/%%VERIFICATION_URL%%/g, verificationURL),
+            html: personalizedHTML,
         });
     } catch (error) {
         console.error("failed to send verification email:", error);

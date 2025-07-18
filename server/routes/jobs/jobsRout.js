@@ -7,8 +7,6 @@ const router = express.Router();
 import * as handlers from "../jobs/jobshandlers.js";
 import checkRole from "../../middleware/checkRole.js";
 
-
-
 // @route   POST /api/jobs/postJobs
 // @desc    Create new Job
 // @access  Private (company only)
@@ -18,8 +16,6 @@ router.post("/postJobs", auth, jobPostValidater, handlers.postjob);
 // @desc    get all Jobs
 // @access  Private (company only)
 router.get("/", auth, handlers.showalljobs);
-
-
 
 // @route   GET /api/jobs/search?keyword=developer
 // @desc    Search jobs by title or company name (case-insensitive)

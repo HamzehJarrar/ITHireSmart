@@ -127,11 +127,14 @@ const Register = () => {
 
               setFieldError("email", "Registration failed. Please try again.");
             } catch (error) {
-              setFieldError(
-                "email",
-                error.response?.data?.message ||
-                  "Error occurred. Please try again."
-              );
+              const serverMessage =
+                error.response?.data?.message || error.response?.data?.error;
+
+              if (serverMessage?.toLowerCase().includes("already")) {
+                setFieldError("email", "Account already exists");
+              } else {
+                setFieldError("email", "Account already exists");
+              }
             } finally {
               setSubmitting(false);
             }

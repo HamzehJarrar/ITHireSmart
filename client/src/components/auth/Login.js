@@ -9,6 +9,8 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { FormHelperText } from "@mui/material";
+import { loginCompany } from "../../API/company.js";
+import { loginUser } from "../../API/API.js";
 
 const style = {
   display: "flex",
@@ -73,8 +75,6 @@ const Login = ({ login, type }) => {
     setShowPassword((prev) => !prev);
   };
 
-
-
   const validationSchema = Yup.object({
     email: Yup.string()
       .email("Invalid email address")
@@ -84,38 +84,58 @@ const Login = ({ login, type }) => {
       .min(8, "Password must be at least 8 characters"),
   });
 
-  
   return (
     <Formik
       initialValues={{ email: "", password: "" }}
       validationSchema={validationSchema}
       onSubmit={async (values, { setSubmitting, setFieldError }) => {
         try {
-          const res = await login(values);
-          if (res && res.token) {
-            localStorage.setItem("role", res.role || type);
-            localStorage.setItem("email", res.email);
-            localStorage.setItem("userId", res.id);
+          const loginFunction = async (values) => {
+            if (type === "company") {
+              return await loginCompany(values.companyEmail, values.password);
+            } else {
+              return await loginUser(values);
+            }
+          };
+
+          const res = await loginFunction(values);
+
+          if (res && res.data && res.data.token) {
+            const data = res.data;
+            localStorage.setItem("role", data.role || type);
+            localStorage.setItem("email", data.email);
+            localStorage.setItem("userId", data.id);
+            localStorage.setItem("token", data.token);
 
             if (type === "company") {
-              localStorage.setItem("companyName", res.companyName);
+              localStorage.setItem("companyName", data.companyName);
               navigator("/CompanyDashboard");
             } else {
-              localStorage.setItem("firstName", res.firstName);
-              localStorage.setItem("lastName", res.lastName);
+              localStorage.setItem("firstName", data.firstName);
+              localStorage.setItem("lastName", data.lastName);
               navigator("/FindJob");
             }
-          } else if (res && res.errors && Array.isArray(res.errors)) {
-            res.errors.forEach((error) => {
-              setFieldError(error.param || "email", error.msg || "Login failed");
+          } else if (
+            res &&
+            res.data &&
+            res.data.errors &&
+            Array.isArray(res.data.errors)
+          ) {
+            res.data.errors.forEach((error) => {
+              setFieldError(
+                error.param || "email",
+                error.msg || "Login failed"
+              );
             });
-          } else if (res && res.msg) {
-            setFieldError("email", res.msg);
+          } else if (res && res.data && res.data.msg) {
+            setFieldError("email", res.data.msg);
           } else {
             setFieldError("email", "Login failed. Please try again.");
           }
         } catch (error) {
-          setFieldError("email", "An error occurred during login.");
+          const msg =
+            error?.response?.data?.msg || "An error occurred during login.";
+          setFieldError("email", msg);
         } finally {
           setSubmitting(false);
         }
@@ -123,12 +143,24 @@ const Login = ({ login, type }) => {
     >
       {({ errors, touched, handleChange, handleBlur }) => (
         <Form>
-          <Box sx={{ backgroundColor: "black", height: "100vh", position: "relative" }}>
+          <Box
+            sx={{
+              backgroundColor: "black",
+              height: "100vh",
+              position: "relative",
+            }}
+          >
             <Box sx={style}>
-              <Typography variant="h2" sx={{ fontFamily: "Geist", textAlign: "center" }}>
+              <Typography
+                variant="h2"
+                sx={{ fontFamily: "Geist", textAlign: "center" }}
+              >
                 {type === "company" ? "Company Login" : "Login"}
               </Typography>
-              <Typography variant="h6" sx={{ fontFamily: "Geist", textAlign: "center" }}>
+              <Typography
+                variant="h6"
+                sx={{ fontFamily: "Geist", textAlign: "center" }}
+              >
                 {type === "company"
                   ? "Please enter your company Email and Password"
                   : "Please enter your Email and your Password"}
@@ -147,7 +179,9 @@ const Login = ({ login, type }) => {
                   onBlur={handleBlur}
                 />
                 {touched.email && errors.email && (
-                  <FormHelperText sx={{ color: "red", mt: 1 }}>{errors.email}</FormHelperText>
+                  <FormHelperText sx={{ color: "red", mt: 1 }}>
+                    {errors.email}
+                  </FormHelperText>
                 )}
               </Box>
 
@@ -174,7 +208,11 @@ const Login = ({ login, type }) => {
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
-                        <IconButton onClick={handleTogglePassword} edge="end" sx={{ color: "white" }}>
+                        <IconButton
+                          onClick={handleTogglePassword}
+                          edge="end"
+                          sx={{ color: "white" }}
+                        >
                           {showPassword ? <Visibility /> : <VisibilityOff />}
                         </IconButton>
                       </InputAdornment>
@@ -185,7 +223,10 @@ const Login = ({ login, type }) => {
 
               {/* Forgot Password */}
               {type !== "company" && (
-                <Typography variant="body2" sx={{ fontFamily: "Geist", textAlign: "center", mt: 1 }}>
+                <Typography
+                  variant="body2"
+                  sx={{ fontFamily: "Geist", textAlign: "center", mt: 1 }}
+                >
                   Forgot Password?{" "}
                   <Button
                     onClick={() => navigator("/forgotpassword")}
@@ -203,15 +244,30 @@ const Login = ({ login, type }) => {
               )}
 
               {/* Submit Button */}
-              <Button type="submit" variant="contained" fullWidth size="large" sx={ButtonStyle}>
+              <Button
+                type="submit"
+                variant="contained"
+                fullWidth
+                size="large"
+                sx={ButtonStyle}
+              >
                 Login
               </Button>
 
               {/* Switch to Register */}
-              <Typography variant="body2" sx={{ fontFamily: "Geist", textAlign: "center" }}>
-                {type === "company" ? "Don't have a company account?" : "Don't have an account?"}{" "}
+              <Typography
+                variant="body2"
+                sx={{ fontFamily: "Geist", textAlign: "center" }}
+              >
+                {type === "company"
+                  ? "Don't have a company account?"
+                  : "Don't have an account?"}{" "}
                 <Button
-                  onClick={() => navigator(type === "company" ? "/register-company" : "/register")}
+                  onClick={() =>
+                    navigator(
+                      type === "company" ? "/register-company" : "/register"
+                    )
+                  }
                   variant="text"
                   sx={{ color: "white", textDecoration: "underline" }}
                 >

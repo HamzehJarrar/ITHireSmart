@@ -8,6 +8,7 @@ import {
   sendPasswordResetEmail,
   sendResetSuccessEmail,
 } from "../../nodemailer/sendEmail.js";
+import { validationResult } from "express-validator";
 
 export async function companyRegister(req, res) {
   try {
@@ -89,6 +90,86 @@ export async function companyRegister(req, res) {
     res.status(500).json({ error: err.message });
   }
 }
+
+export async function loginCompany(req, res) {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  let { companyEmail, password } = req.body;
+  companyEmail = companyEmail.toLowerCase();
+
+  try {
+    const company = await Company.findOne({ companyEmail });
+
+    if (!company) {
+      return res.status(404).json({ msg: "Company not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, company.password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: "Invalid credentials" });
+    }
+
+    if (company.status !== "approved") {
+      return res.status(403).json({ msg: "Company not approved yet" });
+    }
+    
+    const payload = {
+      user: {
+        id: company._id,
+        role: "company",
+      },
+    };
+
+    jwt.sign(
+      payload,
+      config.get("jwtSecret"),
+      { expiresIn: "5d" },
+      (err, token) => {
+        if (err) {
+          throw err;
+        } else {
+          res.json({
+            token,
+            id: company._id,
+            companyName: company.companyName,
+            email: company.companyEmail,
+
+            role: "company",
+          });
+        }
+      }
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ msg: "Server error :" + err.message });
+  }
+}
+
+export const getCompanyProfile = async (req, res) => {
+  try {
+    const companyId = req.params.companyId;
+
+    if (!companyId) {
+      return res.status(400).json({ msg: "Company ID is required" });
+    }
+
+    const company = await Company.findById(companyId).select(
+      "companyName companyDescription companyField companyEmail companyNumbers location companyWebsite contactName contactPosition contactPhoneNumber status isVerified dateOfcreation"
+    );
+
+    if (!company) {
+      return res.status(404).json({ msg: "Company not found" });
+    }
+
+    res.json(company);
+  } catch (error) {
+    console.error("Error fetching company profile:", error);
+    res.status(500).json({ msg: "Server error" });
+  }
+};
 
 export async function verifyCompanyEmail(req, res) {
   const { token } = req.query;

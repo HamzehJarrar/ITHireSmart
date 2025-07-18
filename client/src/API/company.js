@@ -3,7 +3,7 @@ import axios from "axios";
 const API = axios.create({ baseURL: "http://localhost:5000/api/companies" });
 
 API.interceptors.request.use((config) => {
-  const token = localStorage.getItem("companyToken");
+  const token = localStorage.getItem("token");
   if (token) {
     config.headers["x-auth-token"] = token;
   }
@@ -18,8 +18,8 @@ export const registerCompany = async (companyData) => {
   return res;
 };
 
-export const loginCompany = (email, password) =>
-  API.post("/login", { email, password });
+export const loginCompany = (companyEmail, password) =>
+  API.post("/login", { companyEmail, password });
 
 export const getAllCompanies = () => API.get("/");
 
@@ -28,5 +28,5 @@ export const verifyCompany = (companyId, status) =>
 
 export const getCompanyById = (id) => API.get(`/${id}`);
 
-
-
+export const getCompanyProfile = (companyId) =>
+  API.get(`/companies/${companyId}`);

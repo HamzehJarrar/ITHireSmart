@@ -3,15 +3,15 @@ import mongoose from "mongoose";
 const companySchema = new mongoose.Schema(
   {
     companyName: { type: String, required: true },
-    companyDescription: { type: String, required: false },
-    companyField: { type: String, required: false },
+    companyDescription: { type: String, required: false, default: "" },
+    companyField: { type: String, required: false, default: "" },
     companyEmail: { type: String, required: true, unique: true },
-    companyNumbers: { type: String, required: false },
-    location: { type: String, required: true },
-    companyWebsite: { type: String, required: false },
-    contactName: { type: String, required: false },
-    contactPosition: { type: String, required: false },
-    contactPhoneNumber: { type: String, required: false },
+    companyNumbers: { type: String, required: false, default: "" },
+    location: { type: String, required: true, default: "" },
+    companyWebsite: { type: String, required: false, default: "" },
+    contactName: { type: String, required: false, default: "" },
+    contactPosition: { type: String, required: false, default: "" },
+    contactPhoneNumber: { type: String, required: false, default: "" },
     password: { type: String, required: true },
     status: {
       type: String,

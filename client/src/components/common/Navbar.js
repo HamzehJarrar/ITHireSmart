@@ -15,7 +15,8 @@ import {
   useMediaQuery,
   patch,
 } from "@mui/material";
-import { getProfile } from "../../API/API";
+import { getProfile,getMyProfile } from "../../API/API";
+import { getCompanyProfile } from "../../API/company";
 import { styled, useTheme } from "@mui/material/styles";
 import MenuIcon from "@mui/icons-material/Menu";
 import { motion } from "framer-motion";
@@ -91,6 +92,8 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const userId = localStorage.getItem("userId");
+  const role = localStorage.getItem("role");
 
   const { user, setUser } = useUser();
 
@@ -98,7 +101,7 @@ const Navbar = () => {
   const navItems = [
     { name: "Find Job", path: "/FindJob" },
     { name: "Courses", path: "/Courses" },
-    { name: "Trainings", path: "/Trainings" }, 
+    { name: "Trainings", path: "/Trainings" },
     ...(localStorage.getItem("role") === "company"
       ? [{ name: "Dashboard", path: "/CompanyDashboard" }]
       : []),
@@ -112,12 +115,12 @@ const Navbar = () => {
   const userItems = [
     {
       name: "Profile",
-      path: "./users/UserProfilePage",
+      path: role === "company" ? "/CompanyProfilePage" : "/MyProfile",
       icon: <AccountCircleIcon fontSize="small" />,
     },
     {
       name: "Settings",
-      path: "./common/Settings",
+      path: "/Settings",
       icon: <SettingsIcon fontSize="small" />,
     },
     { name: "Logout", icon: <LogoutIcon fontSize="small" /> },
@@ -127,24 +130,34 @@ const Navbar = () => {
     const fetchProfile = async () => {
       try {
         const userId = localStorage.getItem("userId");
+        const role = localStorage.getItem("role");
 
-        if (!userId) {
-          throw new Error("User ID not found in localStorage.");
+        if (!userId || !role) {
+          throw new Error("Missing user ID or role.");
         }
 
-        const response = await getProfile(userId);
-        const profile = response.data;
-
-        setUser({
-          ...profile.user,
-          location: profile.location,
-          experience: profile.experience,
-          education: profile.education,
-          skills: profile.skills,
-          profilepic: profile.user.profilepic,
-        });
+        let profile;
+        if (role === "company") {
+          const response = await getCompanyProfile(userId);
+          profile = response.data;
+          setUser({
+            ...profile,
+            profilepic: profile?.companyLogo?.url || profile?.companyLogo || "",
+          });
+        } else {
+          const response = await getMyProfile();
+          profile = response.data;
+          setUser({
+            ...profile.user,
+            location: profile.location,
+            experience: profile.experience,
+            education: profile.education,
+            skills: profile.skills,
+            profilepic: profile.user.profilepic,
+          });
+        }
       } catch (error) {
-        console.error("Error fetching user profile:", error);
+        console.error("Error fetching profile:", error);
       }
     };
 
@@ -228,7 +241,7 @@ const Navbar = () => {
                   sx={{ p: 0.5 }}
                 >
                   <Avatar
-                    src={user?.profilepic?.url}
+                    src={user?.profilepic?.url || "/default-avatar.png"}
                     sx={{
                       width: 50,
                       height: 50,
@@ -256,9 +269,9 @@ const Navbar = () => {
                     if (item.name === "Logout") {
                       handleLogout();
                     } else if (item.name === "Profile") {
-                      navigate("/MyProfile");
+                      navigate(item.path);
                     } else if (item.name === "Settings") {
-                      navigate("/Settings");
+                      navigate(item.path);
                     }
                   }}
                 >

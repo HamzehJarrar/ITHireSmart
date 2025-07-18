@@ -32,6 +32,8 @@ const PostJob = () => {
     const lastName = localStorage.getItem("lastName");
     if (firstName && lastName) {
       setInitialCompany(`${firstName} ${lastName}`);
+    } else {
+      setInitialCompany(`${localStorage.getItem("companyName")}`);
     }
   }, []);
 

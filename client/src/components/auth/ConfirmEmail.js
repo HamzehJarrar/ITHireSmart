@@ -33,11 +33,17 @@ const ConfirmEmail = () => {
       `http://localhost:5000/api/users/verify-email?token=${token}`
     );
 
-    verifyEmail(token)
-      .then(() => setStatus("success"))
+verifyEmail(token)
+      .then((data) => {
+        console.log("API Response:", data); 
+        if (data.userId) {
+          localStorage.setItem("userId", data.userId);
+        }
+        setStatus("success");
+      })
       .catch(() => setStatus("error"));
   }, [token]);
-
+  
   const renderContent = () => {
     switch (status) {
       case "loading":
@@ -155,10 +161,10 @@ const ConfirmEmail = () => {
               </Button>
               <Button
                 variant="outlined"
-                onClick={() => navigate("/")}
+                onClick={() => navigate("/UploadCvPage")}
                 sx={{ minWidth: 140 }}
               >
-                Go Home
+                Cv upload
               </Button>
             </Box>
           </Box>

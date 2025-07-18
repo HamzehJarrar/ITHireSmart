@@ -4,7 +4,7 @@ export const VERIFICATION_EMAIL_TEMPLATE = `
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Verify Your Email</title>
+  <title>Please Verify Your Email Address</title>
 </head>
 <body style="font-family: Arial, sans-serif; background-color: #000; color: #fff; margin: 0; padding: 0;">
   <div style="padding: 20px; text-align: center;">
@@ -12,8 +12,9 @@ export const VERIFICATION_EMAIL_TEMPLATE = `
     <h2 style="color: #fff;">Verify Your Email</h2>
   </div>
   <div style="padding: 20px; background-color: #111; border-radius: 10px; max-width: 600px; margin: auto;">
-    <p>Hello,</p>
-    <p>Thanks for signing up! Click the button below to verify your email:</p>
+    <p>Hi %%FIRST_NAME%% 👋,</p>
+    <p>We’re excited to have you on board at IT HireSmart!</p>
+    <p>Before you can start exploring opportunities, please verify your email by clicking the button below:</p>
     <div style="text-align: center; margin: 30px 0;">
       <a href="%%VERIFICATION_URL%%"
          style="background-color: #fff;

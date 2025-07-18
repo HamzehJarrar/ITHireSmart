@@ -29,7 +29,6 @@ const ConfirmCompanyEmail = () => {
         setMessage("No token provided.");
         return;
       }
-
       try {
         const res = await axios.get(
           `http://localhost:5000/api/companies/verify-email?token=${token}`
@@ -95,8 +94,14 @@ const ConfirmCompanyEmail = () => {
 
         {status !== "loading" && (
           <Button
-          variant="contained"
-          sx={{ mt: 3, px: 4, py: 1.2 , color:"white", backgroundColor: '#000000ff' }}
+            variant="contained"
+            sx={{
+              mt: 3,
+              px: 4,
+              py: 1.2,
+              color: "white",
+              backgroundColor: "#000000ff",
+            }}
             onClick={() => navigate("/")}
           >
             Go to Home

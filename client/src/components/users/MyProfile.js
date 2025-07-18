@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getProfile } from "../../API/API";
+import { getProfile,getMyProfile } from "../../API/API";
 import {
   Box,
   Typography,
@@ -36,13 +36,7 @@ const UserProfilePage = () => {
       try {
         setLoading(true);
 
-        const userId = localStorage.getItem("userId");
-
-        if (!userId) {
-          throw new Error("User ID not found in localStorage.");
-        }
-
-        const response = await getProfile(userId);
+        const response = await getMyProfile();
         const profile = response.data;
 
         setUser({

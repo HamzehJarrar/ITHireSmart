@@ -41,6 +41,8 @@ import EditTraining from "./components/Training/EditTraining";
 import ConfirmEmail from "./components/auth/ConfirmEmail";
 import CompanyRegister from "./components/Company/CompanyRegister";
 import ConfirmCompanyEmail from "./components/Company/ConfirmCompanyEmail";
+import CompanyLogin from "./components/Company/CompanyLogin";
+import CompanyProfilePage from "./components/Company/CompanyProfilePage";
 function App() {
   const location = useLocation();
 
@@ -85,7 +87,8 @@ function App() {
     "/confirmemail",
     "/verify-email",
     "/companyregister",
-    "/confirmcompanyemail"
+    "/confirmcompanyemail",
+    "/companylogin",
   ].includes(location.pathname.toLowerCase());
 
   return (
@@ -117,7 +120,9 @@ function App() {
           <Route path="/training/:id" element={<TrainingDetails />} />
           <Route path="/ConfirmEmail" element={<ConfirmEmail />} />
           <Route path="/companyregister" element={<CompanyRegister />} />
-
+          <Route path="/companylogin" element={<CompanyLogin />} />
+          <Route path="/CompanyProfilePage" element={<CompanyProfilePage />} />
+          
           {/* Protected Routes for company role */}
           <Route element={<ProtectedRoute allowedRole="company" />}>
             <Route path="/post-job" element={<PostJob />} />
@@ -142,7 +147,10 @@ function App() {
               element={<TrainingsApplicants />}
             />
             <Route path="/edit-training/:id" element={<EditTraining />} />
-            <Route path="/confirmcompanyemail" element={<ConfirmCompanyEmail />} />
+            <Route
+              path="/confirmcompanyemail"
+              element={<ConfirmCompanyEmail />}
+            />
           </Route>
 
           {/* 404 Not Found */}
