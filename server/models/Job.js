@@ -66,13 +66,18 @@ const jobSchema = new mongoose.Schema(
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         appliedAt: { type: Date, default: Date.now },
+        status: {
+          type: String,
+          enum: ["pending", "accepted", "rejected"],
+          default: "pending"
+        }
       },
     ],
     recommendedApplicants: [
       {
         user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        recommendedAt: { type: Date, default: Date.now }, 
-        rank: Number, 
+        recommendedAt: { type: Date, default: Date.now },
+        rank: Number,
       },
     ],
   },
