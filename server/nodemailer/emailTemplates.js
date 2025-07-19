@@ -102,3 +102,40 @@ export const PASSWORD_RESET_SUCCESS_TEMPLATE = `
 </body>
 </html>
 `;
+
+export const COMPANY_VERIFICATION_EMAIL_TEMPLATE = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Please Verify Your Email Address</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #000; color: #fff; margin: 0; padding: 0;">
+  <div style="padding: 20px; text-align: center;">
+    <h1 style="color: #fff;">IT HireSmart</h1>
+    <h2 style="color: #fff;">Verify Your Email</h2>
+  </div>
+  <div style="padding: 20px; background-color: #111; border-radius: 10px; max-width: 600px; margin: auto;">
+    <p>Hi %%FIRST_NAME%% 👋,</p>
+    <p>Thank you for registering your company with IT HireSmart.</p>
+   <p>To activate your company account, please verify your company email by clicking the button below:</p>
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="%%VERIFICATION_URL%%"
+         style="background-color: #fff;
+                color: #000;
+                padding: 12px 24px;
+                text-decoration: none;
+                border-radius: 5px;
+                font-weight: bold;">
+        VERIFY EMAIL
+      </a>
+    </div>
+    <p>This link will expire in 1 hour.</p>
+    <p><strong>Note:</strong> After verifying your email, your company account must be approved by an admin before you can access all features.</p>
+    <p>If you didn’t request this, just ignore this email.</p>
+    <p>— IT HireSmart Team</p>
+  </div>
+</body>
+</html>
+`;

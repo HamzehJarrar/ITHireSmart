@@ -1,6 +1,8 @@
 import { validationResult } from "express-validator";
 import Job from "../../models/Job.js";
 import openai from "../../utils/openaiClient.js";
+import Profile from "../../models/Profile.js";
+
 
 export async function postjob(req, res) {
   const errors = validationResult(req);
@@ -230,123 +232,93 @@ export async function getRecommendedApplicants(req, res) {
       return res.status(404).json({ message: "No applicants found" });
     }
 
-    const applicantsData = job.applicants.map(({ user }) => {
-      if (!user) {
-        return { name: "Unknown", skills: [], experience: 0, email: "" };
-      }
+    const requirements = job.Requirements?.join(", ") || "None specified";
+    const responsibilities = job.Responsibilities?.join(", ") || "None specified";
+    const experienceLevel = job.experienceLevel || "Not specified";
 
-      let totalExperienceYears = 0;
-      if (Array.isArray(user.experience)) {
-        user.experience.forEach((exp) => {
-          const fromDate = new Date(exp.from);
-          const toDate = exp.current
-            ? new Date()
-            : exp.to
-            ? new Date(exp.to)
-            : new Date();
+    const applicantsData = await Promise.all(
+      job.applicants.map(async ({ user }) => {
+        if (!user || !user._id) return null;
 
-          if (!isNaN(fromDate) && !isNaN(toDate) && toDate > fromDate) {
-            totalExperienceYears +=
-              (toDate - fromDate) / (1000 * 60 * 60 * 24 * 365.25);
-          }
-        });
-      }
-      totalExperienceYears = Math.floor(totalExperienceYears);
+        const profile = await Profile.findOne({ user: user._id });
+        if (!profile) return null;
 
-      return {
-        name:
-          `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Unknown",
-        skills: Array.isArray(user.skills) ? user.skills : [],
-        experience: totalExperienceYears,
-        email: user.email || "",
-      };
-    });
+        return {
+          name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Unknown",
+          skills: Array.isArray(profile.skills) ? profile.skills : [],
+          education: Array.isArray(profile.education) ? profile.education : [],
+          experience: Array.isArray(profile.experience) ? profile.experience.length : 0,
+          email: user.email || "",
+          languages: Array.isArray(profile.languages) ? profile.languages : [],
+          trainingCourses: Array.isArray(profile.trainingCourses) ? profile.trainingCourses : []
+        };
+      })
+    );
 
-    const prompt = `You are an intelligent recruitment assistant. Your task is to recommend the top 5 applicants for a job opening based on their skills, education, and experience.
+    const filteredApplicants = applicantsData.filter(Boolean);
 
-The job requirements are:
-Skills: [List job required skills here]
-Education: [Required degrees or fields]
-Experience: [Required years and domains of experience]
+    const prompt = `You are an intelligent recruitment assistant. Your task is to recommend the top 5 applicants for the following job based on their skills, education, and experience.
 
-Below is a list of applicants. Each applicant has the following structure:
+Job Details:
+- Title: ${job.jobTitle}
+- Company: ${job.companyName}
+- Requirements: ${requirements}
+- Responsibilities: ${responsibilities}
+- Experience Level: ${experienceLevel}
 
-{
-  "name": "Applicant Name",
-  "skills": [...],
-  "education": [...],
-  "experience": [...]
-}
+Below is a list of applicants:
 
-Please evaluate each applicant carefully and rank them based on how well they match the job requirements. Justify briefly why each of the top 5 was selected.
+${JSON.stringify(applicantsData, null, 2)}
 
-Return your answer in this JSON format:
+Please evaluate each applicant carefully and rank them based on how well they match the job.
 
-{
-  "top_applicants": [
-    {
-      "name": "Applicant Name",
-      "match_score": 0-100,
-      "justification": "Why this applicant is a good fit"
-    },
-    ...
-  ]
-}`;
+Return a pure JSON array of the top applicants (up to 5), sorted from best to worst. Only include applicants who have some relevant qualifications. Do not include placeholders.
+
+Use this structure:
+
+[
+  {
+    "name": "Applicant Name",
+    "match_score": 0-100,
+    "justification": "Why this applicant is a good fit"
+  },
+  ...
+]`;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: "gpt-4o",
       messages: [{ role: "user", content: prompt }],
       temperature: 0,
-      max_tokens: 200,
+      max_tokens: 1000,
     });
 
-    console.log("Full OpenAI response:", completion);
-
     const responseText = completion.choices?.[0]?.message?.content?.trim();
-
-    console.log("OpenAI response text:", responseText);
     if (!responseText) {
       throw new Error("No response text from OpenAI");
     }
 
-    function extractJsonFromText(text) {
-      const jsonMatch = text.match(/```json\s*([\s\S]*?)```/i);
-      if (jsonMatch && jsonMatch[1]) return jsonMatch[1].trim();
-
-      const arrayMatch = text.match(/\[.*\]/s);
-      if (arrayMatch) return arrayMatch[0];
-
-      return text;
+    const jsonMatch = responseText.match(/\[.*\]/s);
+    if (!jsonMatch) {
+      return res.status(500).json({ message: "Could not extract JSON array from AI response." });
     }
 
-    let recommendedIndexes;
+    let aiResponse;
     try {
-      const jsonPart = extractJsonFromText(responseText);
-      recommendedIndexes = JSON.parse(jsonPart);
-    } catch (parseError) {
-      console.error("Failed to parse OpenAI response JSON:", parseError);
-      console.error("Raw response text:", responseText);
-      return res
-        .status(500)
-        .json({ message: "Failed to parse OpenAI response." });
+      aiResponse = JSON.parse(jsonMatch[0]);
+      
+
+    } catch (error) {
+      console.error("JSON parse error:", error);
+      return res.status(500).json({ message: "Failed to parse AI response" });
     }
 
-    recommendedIndexes = recommendedIndexes.filter(
-      (idx) => Number.isInteger(idx) && idx > 0 && idx <= job.applicants.length
-    );
-
-    const recommendedApplicants = recommendedIndexes
-      .map((idx) => job.applicants[idx - 1])
-      .filter(Boolean);
-
-    return res.json(recommendedApplicants);
+    console.log("Recommended response:", aiResponse);
+    return res.json(aiResponse);
   } catch (error) {
     console.error("Error fetching recommendations:", error);
-    if (error.response) {
-      console.error("OpenAI response error data:", error.response.data);
-    }
-    return res
-      .status(500)
-      .json({ message: "Server error", error: error.message });
+    return res.status(500).json({ message: "Server error", error: error.message });
   }
 }
+
+
+

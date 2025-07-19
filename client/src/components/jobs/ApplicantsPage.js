@@ -321,23 +321,18 @@ const ApplicantsPage = () => {
         {recommended.length === 0 ? (
           <Typography>No recommendations found.</Typography>
         ) : (
-          <List>
-            {recommended.map((rec) => {
-              const user = rec.user;
-              const name =
-                user?.firstName && user?.lastName
-                  ? `${user.firstName} ${user.lastName}`
-                  : user?.firstName
-                  ? user.firstName
-                  : "Unknown";
-
-              return (
-                <ListItem key={rec._id} alignItems="flex-start" divider>
-                  <ListItemText primary={name} secondary={user.email} />
-                </ListItem>
-              );
-            })}
-          </List>
+<List>
+  {recommended.map((rec, index) => {
+    return (
+      <ListItem key={index} alignItems="flex-start" divider>
+        <ListItemText
+          primary={rec.name || "Unknown"}
+          secondary={rec.justification || ""}
+        />
+      </ListItem>
+    );
+  })}
+</List>
         )}
       </Drawer>
     </Box>

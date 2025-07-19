@@ -13,6 +13,7 @@ import CakeIcon from "@mui/icons-material/Cake";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import { useNavigate } from "react-router-dom";
 import Button from "@mui/material/Button";
+
 const UserCVPage = () => {
   const { id } = useParams();
   const [user, setUser] = useState(null);
@@ -28,15 +29,18 @@ const UserCVPage = () => {
           experience,
           education,
           skills,
+          languages,
+          trainingCourses,
         } = response.data;
-
-        setUser(response.data.user);
+        console.log("Profile response:", response.data);
         setUser({
           ...userInfo,
           location: location || "",
           experience: experience || [],
           education: education || [],
           skills: skills || [],
+          languages: languages || [],
+          trainingCourses: trainingCourses || [],
           profilepic: userInfo.profilepic || null,
         });
         setPhoto(userInfo.profilepic || null);
@@ -242,28 +246,12 @@ const UserCVPage = () => {
                       marginBottom: "16px",
                     }}
                   >
-                    <BusinessCenterIcon
-                      sx={{ fontSize: "1.5rem", color: "#2c3e50" }}
-                    />
-
-                    <Box
-                      sx={{
-                        fontSize: "1.25rem",
-                        fontWeight: "700",
-                        color: "#2c3e50",
-                      }}
-                    >
+                    <BusinessCenterIcon sx={{ fontSize: "1.5rem", color: "#2c3e50" }} />
+                    <Box sx={{ fontSize: "1.25rem", fontWeight: "700", color: "#2c3e50" }}>
                       Experience
                     </Box>
                   </Box>
-
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      gap: "16px",
-                    }}
-                  >
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                     {user.experience.map((exp, idx) => (
                       <Box
                         key={idx}
@@ -272,35 +260,10 @@ const UserCVPage = () => {
                           borderLeft: "4px solid #2c3e50",
                           padding: "16px",
                           borderRadius: "4px",
+                          fontSize: "1rem",
                         }}
                       >
-                        <Box sx={{ fontSize: "1.1rem", fontWeight: "700" }}>
-                          {exp.title}
-                        </Box>
-                        <Box
-                          sx={{
-                            fontSize: "0.9rem",
-                            color: "#6c757d",
-                            fontWeight: "500",
-                          }}
-                        >
-                          {exp.company}
-                        </Box>
-                        <Box sx={{ fontSize: "0.8rem", color: "#999" }}>
-                          {formatMonthYear(exp.from)} -{" "}
-                          {exp.current ? "Present" : formatMonthYear(exp.to)}
-                        </Box>
-                        {exp.description && (
-                          <Box
-                            sx={{
-                              fontSize: "0.9rem",
-                              marginTop: "8px",
-                              lineHeight: "1.5",
-                            }}
-                          >
-                            {exp.description}
-                          </Box>
-                        )}
+                        {exp}
                       </Box>
                     ))}
                   </Box>
@@ -329,7 +292,6 @@ const UserCVPage = () => {
                       Education
                     </Box>
                   </Box>
-
                   <Box
                     sx={{
                       display: "flex",
@@ -345,42 +307,16 @@ const UserCVPage = () => {
                           borderLeft: "4px solid #6c757d",
                           padding: "16px",
                           borderRadius: "4px",
+                          fontSize: "1rem",
                         }}
                       >
-                        <Box sx={{ fontSize: "1.1rem", fontWeight: "700" }}>
-                          {edu.school}
-                        </Box>
-                        <Box
-                          sx={{
-                            fontSize: "0.9rem",
-                            color: "#6c757d",
-                            fontWeight: "500",
-                          }}
-                        >
-                          {edu.degree} - {edu.fieldOfStudy}
-                        </Box>
-                        <Box sx={{ fontSize: "0.8rem", color: "#999" }}>
-                          {formatMonthYear(edu.from)} -{" "}
-                          {edu.to ? formatMonthYear(edu.to) : "Present"}
-                        </Box>
-                        {edu.description && (
-                          <Box
-                            sx={{
-                              fontSize: "0.9rem",
-                              marginTop: "8px",
-                              lineHeight: "1.5",
-                            }}
-                          >
-                            {edu.description}
-                          </Box>
-                        )}
+                        {edu}
                       </Box>
                     ))}
                   </Box>
                 </Box>
               )}
-            </Box>
-
+</Box>
             {/* Right Column */}
             <Box sx={{ flex: "0 0 250px", minWidth: "250px" }}>
               {/* Skills */}
@@ -393,6 +329,7 @@ const UserCVPage = () => {
                       color: "#2c3e50",
                       marginBottom: "8px",
                     }}
+                    
                   >
                     Skills
                   </Box>

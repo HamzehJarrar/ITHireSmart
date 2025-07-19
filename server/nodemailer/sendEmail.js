@@ -1,5 +1,6 @@
 import {
     VERIFICATION_EMAIL_TEMPLATE,
+    COMPANY_VERIFICATION_EMAIL_TEMPLATE,
     PASSWORD_RESET_REQUEST_TEMPLATE,
     PASSWORD_RESET_SUCCESS_TEMPLATE,
 } from "./emailTemplates.js";
@@ -7,9 +8,13 @@ import { transporter } from "./nodemailer.config.js";
 
 const sender = `"ITHireSmart" <${process.env.SMTP_USER}>`;
 
-export const sendVerificationEmail = async (firstName,email, verificationURL) => {
+export const sendVerificationEmail = async (firstName,email, verificationURL,role) => {
     try {
-        const personalizedHTML = VERIFICATION_EMAIL_TEMPLATE
+        const template = role === "user"
+            ? VERIFICATION_EMAIL_TEMPLATE
+            : COMPANY_VERIFICATION_EMAIL_TEMPLATE;
+
+        const personalizedHTML = template
             .replace(/%%VERIFICATION_URL%%/g, verificationURL)
             .replace(/%%FIRST_NAME%%/g, firstName);
         

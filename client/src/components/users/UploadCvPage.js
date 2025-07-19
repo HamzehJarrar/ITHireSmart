@@ -23,12 +23,8 @@ const UploadCvPage = () => {
       setLoading(true);
       setMessage("");
 
-      const res = await axios.post("/api/cv/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+        const res = await uploadCv(formData);
+
 
       setMessage("CV processed and profile updated successfully.");
     } catch (err) {

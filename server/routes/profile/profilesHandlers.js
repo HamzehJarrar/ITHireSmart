@@ -18,6 +18,8 @@ export async function updateprofile(req, res) {
       bio,
       experience,
       education,
+      trainingCourses,
+      languages,
     } = req.body;
 
     const profileFields = {
@@ -31,6 +33,8 @@ export async function updateprofile(req, res) {
       bio,
       experience,
       education,
+      languages,
+      trainingCourses,
     };
     try {
       if (firstName || lastName) {
