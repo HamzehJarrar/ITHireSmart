@@ -151,23 +151,26 @@ const Login = ({ login, type }) => {
             }}
           >
             <Box sx={style}>
+              {/* العنوان */}
               <Typography
-                variant="h2"
-                sx={{ fontFamily: "Geist", textAlign: "center" }}
+                variant="h3"
+                sx={{ fontFamily: "Geist", textAlign: "center", mb: 1 }}
               >
                 {type === "company" ? "Company Login" : "Login"}
               </Typography>
+
+              {/* الوصف */}
               <Typography
-                variant="h6"
-                sx={{ fontFamily: "Geist", textAlign: "center" }}
+                variant="subtitle1"
+                sx={{ fontFamily: "Geist", textAlign: "center", mb: 3 }}
               >
                 {type === "company"
-                  ? "Please enter your company Email and Password"
-                  : "Please enter your Email and your Password"}
+                  ? "Please enter your company email and password"
+                  : "Please enter your email and password"}
               </Typography>
 
               {/* Email Field */}
-              <Box sx={{ width: "100%", maxWidth: "400px" }}>
+              <Box sx={{ width: "100%", maxWidth: "400px", mb: 2 }}>
                 <Field
                   name="email"
                   as={TextField}
@@ -186,15 +189,7 @@ const Login = ({ login, type }) => {
               </Box>
 
               {/* Password Field */}
-              <Box
-                sx={{
-                  width: "100%",
-                  maxWidth: "400px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 1.5,
-                }}
-              >
+              <Box sx={{ width: "100%", maxWidth: "400px", mb: 1.5 }}>
                 <Field
                   name="password"
                   as={TextField}
@@ -225,9 +220,15 @@ const Login = ({ login, type }) => {
               {type !== "company" && (
                 <Typography
                   variant="body2"
-                  sx={{ fontFamily: "Geist", textAlign: "center", mt: 1 }}
+                  sx={{
+                    fontFamily: "Geist",
+                    textAlign: "right",
+                    width: "100%",
+                    maxWidth: "400px",
+                    mb: 2,
+                  }}
                 >
-                  Forgot Password?{" "}
+                  Forgot password?{" "}
                   <Button
                     onClick={() => navigator("/forgotpassword")}
                     variant="text"
@@ -247,7 +248,6 @@ const Login = ({ login, type }) => {
               <Button
                 type="submit"
                 variant="contained"
-                fullWidth
                 size="large"
                 sx={ButtonStyle}
               >
@@ -257,7 +257,7 @@ const Login = ({ login, type }) => {
               {/* Switch to Register */}
               <Typography
                 variant="body2"
-                sx={{ fontFamily: "Geist", textAlign: "center" }}
+                sx={{ fontFamily: "Geist", textAlign: "center", mt: 2 }}
               >
                 {type === "company"
                   ? "Don't have a company account?"
@@ -275,6 +275,26 @@ const Login = ({ login, type }) => {
                 </Button>
               </Typography>
 
+              {/* Optional: Switch to other login if someone ends up on wrong page */}
+              <Typography
+                variant="body2"
+                sx={{ fontFamily: "Geist", textAlign: "center" }}
+              >
+                {type === "company"
+                  ? "Want to login as user?"
+                  : "Want to login as company?"}{" "}
+                <Button
+                  onClick={() =>
+                    navigator(type === "company" ? "/login" : "/CompanyLogin")
+                  }
+                  variant="text"
+                  sx={{ color: "white", textDecoration: "underline" }}
+                >
+                  Switch
+                </Button>
+              </Typography>
+
+              {/* Background Images */}
               <img src={Ellipse} alt="Ellipse" style={ImageStyleTopLeft} />
               <img src={Vector} alt="Vector" style={ImageStyleBottomRight} />
             </Box>

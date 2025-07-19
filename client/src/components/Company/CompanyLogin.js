@@ -84,9 +84,8 @@ const CompanyLogin = () => {
             localStorage.setItem("companyId", data.id);
             localStorage.setItem("companyName", data.companyName);
             localStorage.setItem("token", data.token);
-            
+
             navigate("/CompanyDashboard");
-            
           } else if (
             res &&
             res.data &&

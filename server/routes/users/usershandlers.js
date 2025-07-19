@@ -200,16 +200,8 @@ export async function verifyEmail(req, res) {
 }
 
 // POST /api/users/forgot-password
-// export async function forgotPassword(req, res) {
-//   const { email } = req.body;
-
-
-//   } catch (error) {
-//     console.error(error.message);
-//     return res.status(500).send("Server error during registration");
-//   }
-// }
-
+export async function forgotPassword(req, res) {
+  const { email } = req.body;
 
   try {
     const user = await User.findOne({ email });
@@ -235,7 +227,6 @@ export async function verifyEmail(req, res) {
     res.status(400).json({ success: false, message: error.message });
   }
 }
-
 // -----------------------
 //  login
 // -----------------------
@@ -294,36 +285,6 @@ export async function login(req, res) {
     res.status(500).send(error.message);
   }
 }
-
-// POST /api/users/forgot-password
-export async function forgotPassword(req, res) {
-  const { email } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.json({
-        message:
-          "If that email is registered, you’ll receive reset instructions.",
-      });
-    }
-
-    const resetToken = crypto.randomBytes(20).toString("hex");
-    const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
-
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpiresAt = resetTokenExpiresAt;
-
-    await user.save();
-
-    const resetURL = `${process.env.BASE_URL}/api/users/reset-password?token=${resetToken}`;
-    await sendPasswordResetEmail(email, resetURL);
-  } catch (error) {
-    console.log("Error in forgotPassword ", error);
-    res.status(400).json({ success: false, message: error.message });
-  }
-}
-
 
 // -----------------------
 //  RESET PASSWORD
@@ -553,18 +514,10 @@ export async function getUserById(req, res) {
     console.error("getUserById error:", error.message);
     res.status(500).json({ msg: "Failed to fetch user", error: error.message });
   }
-
 }
-// -----------------------
-//  Enables or disables user account for admin dashboard.
-// -----------------------
+
 export async function toggleUserStatus(req, res) {
   const { id } = req.params;
-
-
-  export async function toggleUserStatus(req, res) {
-    const { id } = req.params;
-
 
   try {
     const user = await User.findById(id);
@@ -582,10 +535,12 @@ export async function toggleUserStatus(req, res) {
     });
   } catch (error) {
     console.error("toggleUserStatus error:", error.message);
-    res.status(500).json({
-      msg: "Server error while toggling status",
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({
+        msg: "Server error while toggling status",
+        error: error.message,
+      });
   }
 }
 
@@ -713,7 +668,6 @@ Use this format:
     return res.status(500).json({ message: "Failed to process CV" });
   }
 }
-
 // -----------------------
 //  view job applications for user
 // -----------------------
@@ -721,14 +675,18 @@ export async function viewJobApplications(req, res) {
   try {
     const userId = req.params.userID; // أو req.user.id إذا مع auth
 
-    const jobs = await Job.find({ "applicants.user": userId }).select("jobTitle applicants");
+    const jobs = await Job.find({ "applicants.user": userId }).select(
+      "jobTitle applicants"
+    );
 
-    const filtered = jobs.map(job => {
-      const applicant = job.applicants.find(app => app.user.toString() === userId);
+    const filtered = jobs.map((job) => {
+      const applicant = job.applicants.find(
+        (app) => app.user.toString() === userId
+      );
       return {
         jobTitle: job.jobTitle,
         appliedAt: applicant?.appliedAt,
-        status: applicant?.status || "pending"
+        status: applicant?.status || "pending",
       };
     });
 
@@ -751,16 +709,22 @@ export async function viewTrainingApplications(req, res) {
         { enrolledUsers: userId },
         { acceptedParticipants: userId },
         { rejectedParticipants: userId },
-        { pendingParticipants: userId }
-      ]
-    }).select("trainingTitle companyName startAt endAt trainingType location enrolledUsers acceptedParticipants rejectedParticipants pendingParticipants");
+        { pendingParticipants: userId },
+      ],
+    }).select(
+      "trainingTitle companyName startAt endAt trainingType location enrolledUsers acceptedParticipants rejectedParticipants pendingParticipants"
+    );
 
-    const result = trainings.map(training => {
+    const result = trainings.map((training) => {
       let status = "pending";
-      if (training.acceptedParticipants.some(u => u.equals(userId))) status = "accepted";
-      else if (training.rejectedParticipants.some(u => u.equals(userId))) status = "rejected";
-      else if (training.enrolledUsers.some(u => u.equals(userId))) status = "enrolled";
-      else if (training.pendingParticipants.some(u => u.equals(userId))) status = "pending";
+      if (training.acceptedParticipants.some((u) => u.equals(userId)))
+        status = "accepted";
+      else if (training.rejectedParticipants.some((u) => u.equals(userId)))
+        status = "rejected";
+      else if (training.enrolledUsers.some((u) => u.equals(userId)))
+        status = "enrolled";
+      else if (training.pendingParticipants.some((u) => u.equals(userId)))
+        status = "pending";
 
       return {
         trainingTitle: training.trainingTitle,
@@ -769,7 +733,7 @@ export async function viewTrainingApplications(req, res) {
         endAt: training.endAt,
         trainingType: training.trainingType,
         location: training.location,
-        status
+        status,
       };
     });
 
