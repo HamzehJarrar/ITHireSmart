@@ -197,6 +197,7 @@ export async function verifyEmail(req, res) {
   }
 }
 
+
 // POST /api/users/forgot-password
 // export async function forgotPassword(req, res) {
 //   const { email } = req.body;
@@ -290,6 +291,7 @@ export async function login(req, res) {
   }
 }
 
+
 // POST /api/users/forgot-password
 export async function forgotPassword(req, res) {
   const { email } = req.body;
@@ -318,6 +320,7 @@ export async function forgotPassword(req, res) {
     res.status(400).json({ success: false, message: error.message });
   }
 }
+
 
 // -----------------------
 //  RESET PASSWORD
