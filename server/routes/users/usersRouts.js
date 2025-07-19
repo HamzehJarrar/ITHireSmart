@@ -102,9 +102,7 @@ router.route("/getallusers")
   .get(handlers.getAllUsers)
 //.get(auth, checkRole("admin"), handlers.getallusers) // to be handled later
 
-router.route("/:id")
-  .get(handlers.getUserById);  
-// .get(auth, checkRole("admin"), handlers.getUserById); // to be handled later
+
 
 router.route("/toggleUserStatus/:id")
   .patch(handlers.toggleUserStatus);
@@ -118,10 +116,16 @@ const upload = multer({ storage: storage });
 router.route("/uploadCv").post(upload.single('cv'), handlers.uploadCv);
 
 
-router.route("/viewJobApplications/:userID")
-  .get(handlers.viewJobApplications);
+router.route("/viewJobApplications")
+  .get(auth, handlers.viewJobApplications);
 
-router.route("/viewTrainingApplications/:userID")
-  .get(handlers.viewTrainingApplications);
+router.route("/viewTrainingApplications")
+  .get(auth, handlers.viewTrainingApplications);
 
+router.route("/viewCourseApplications")
+  .get(auth, handlers.viewCourseApplications);
+
+router.route("/:id")
+  .get(handlers.getUserById);  
+// .get(auth, checkRole("admin"), handlers.getUserById); // to be handled later
 export default router;

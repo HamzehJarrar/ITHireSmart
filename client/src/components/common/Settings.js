@@ -68,7 +68,7 @@ const Settings = () => {
             if (role === "company") {
               navigate("/EditCompanyProfile");
             } else {
-              navigate("/profile");
+              navigate("/UserSetting");
             }
           }}
           sx={{

@@ -26,6 +26,7 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
 export async function resetPassword(req, res) {
   const { token } = req.params;
   const { password } = req.body;
@@ -122,9 +123,9 @@ export async function register(req, res) {
 
     const verificationURL = `http://${process.env.FRONTEND_URL}/ConfirmEmail?token=${verificationToken}`;
     try {
-      await sendVerificationEmail(firstName, email, verificationURL);
+      await sendVerificationEmail(firstName, email, verificationURL, "user");
     } catch (mailErr) {
-      // حذف المستخدم والبروفايل لو فشل إرسال الإيميل
+ 
       await User.findByIdAndDelete(user._id);
       await Profile.deleteOne({ user: user._id });
       return res.status(500).json({
@@ -132,7 +133,6 @@ export async function register(req, res) {
       });
     }
 
-    // إنشاء JWT والرد معاه
     const payload = {
       user: {
         id: user.id,
@@ -199,6 +199,7 @@ export async function verifyEmail(req, res) {
   }
 }
 
+
 // POST /api/users/forgot-password
 export async function forgotPassword(req, res) {
   const { email } = req.body;
@@ -227,6 +228,7 @@ export async function forgotPassword(req, res) {
     res.status(400).json({ success: false, message: error.message });
   }
 }
+
 // -----------------------
 //  login
 // -----------------------
@@ -286,6 +288,37 @@ export async function login(req, res) {
   }
 }
 
+
+// POST /api/users/forgot-password
+export async function forgotPassword(req, res) {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.json({
+        message:
+          "If that email is registered, you’ll receive reset instructions.",
+      });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    const resetTokenExpiresAt = Date.now() + 1 * 60 * 60 * 1000; // 1 hour
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpiresAt = resetTokenExpiresAt;
+
+    await user.save();
+
+    const resetURL = `${process.env.BASE_URL}/api/users/reset-password?token=${resetToken}`;
+    await sendPasswordResetEmail(email, resetURL);
+  } catch (error) {
+    console.log("Error in forgotPassword ", error);
+    res.status(400).json({ success: false, message: error.message });
+  }
+}
+
+
 // -----------------------
 //  RESET PASSWORD
 // -----------------------
@@ -318,9 +351,7 @@ export async function login(req, res) {
 //   return res.json({ message: "Password has been reset successfully." });
 // }
 
-// -----------------------
-//  login
-// -----------------------
+
 
 export async function myprofile(req, res) {
   try {
@@ -660,6 +691,25 @@ Use this format:
         languages,
       },
     });
+    
+try {
+  await Profile.findOneAndUpdate(
+    { user: userId },
+    {
+      $set: {
+        skills,
+        education,
+        experience,
+        trainingCourses,
+        languages,
+      },
+    },
+    { new: true, upsert: true }
+  );
+  console.log("✅ Profile updated");
+} catch (err) {
+  console.error("❌ Failed to update profile:", err);
+}
     return res
       .status(200)
       .json({ message: "CV uploaded and processed successfully" });
@@ -673,7 +723,7 @@ Use this format:
 // -----------------------
 export async function viewJobApplications(req, res) {
   try {
-    const userId = req.params.userID; // أو req.user.id إذا مع auth
+    const userId = req.user.id; 
 
     const jobs = await Job.find({ "applicants.user": userId }).select(
       "jobTitle applicants"
@@ -685,6 +735,9 @@ export async function viewJobApplications(req, res) {
       );
       return {
         jobTitle: job.jobTitle,
+        companyName: job.companyName,
+        location: job.location,
+        description: job.description,
         appliedAt: applicant?.appliedAt,
         status: applicant?.status || "pending",
       };
@@ -702,7 +755,7 @@ export async function viewJobApplications(req, res) {
 // -----------------------
 export async function viewTrainingApplications(req, res) {
   try {
-    const userId = new mongoose.Types.ObjectId(req.params.userID);
+    const userId = new mongoose.Types.ObjectId(req.user.id);
 
     const trainings = await Training.find({
       $or: [
@@ -740,6 +793,44 @@ export async function viewTrainingApplications(req, res) {
     res.json(result);
   } catch (error) {
     console.error("Error fetching training applications:", error.message);
+    res.status(500).json({ msg: "Server error", error: error.message });
+  }
+}
+// -----------------------
+//  view training applications for user
+// -----------------------
+export async function viewCourseApplications(req, res) {
+  try {
+    const userId = new mongoose.Types.ObjectId(req.user.id);
+
+    const courses = await Course.find({
+      $or: [
+        { students: userId },
+        { acceptedStudents: userId },
+        { rejectedStudents: userId }
+      ]
+    }).select("courseTitle instructorName location courseType startAt endAt students acceptedStudents rejectedStudents");
+
+    const result = courses.map(course => {
+      let status = "pending";
+      if (course.acceptedStudents.some(u => u.equals(userId))) status = "accepted";
+      else if (course.rejectedStudents.some(u => u.equals(userId))) status = "rejected";
+      else if (course.students.some(u => u.equals(userId))) status = "applied";
+
+      return {
+        courseTitle: course.courseTitle,
+        instructorName: course.instructorName,
+        location: course.location,
+        courseType: course.courseType,
+        startAt: course.startAt,
+        endAt: course.endAt,
+        status
+      };
+    });
+
+    res.json(result);
+  } catch (error) {
+    console.error("Error fetching course applications:", error.message);
     res.status(500).json({ msg: "Server error", error: error.message });
   }
 }
