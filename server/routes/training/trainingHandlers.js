@@ -47,7 +47,7 @@ export async function getalltrain(req, res) {
 
     const trainings = await Training.find({ isHidden: false })
       .sort({ createdAt: -1 })
-      .populate("comapany", "profilepic firstName lastName");
+      .populate("user", "profilepic firstName lastName");
 
     res.json(trainings);
   } catch (error) {
