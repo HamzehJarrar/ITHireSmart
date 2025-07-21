@@ -323,7 +323,8 @@ const PostCourse = () => {
             fullWidth
             margin="normal"
             multiline
-            rows={2}
+            minRows={3}
+            maxRows={10}
           />
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 2 }}>
@@ -345,7 +346,8 @@ const PostCourse = () => {
             fullWidth
             margin="normal"
             multiline
-            rows={2}
+            minRows={3}
+            maxRows={10}
           />
 
           <Box sx={{ textAlign: "center", mt: 2 }}>

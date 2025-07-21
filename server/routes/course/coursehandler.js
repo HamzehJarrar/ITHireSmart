@@ -3,26 +3,7 @@ import { validationResult } from "express-validator";
 import User from "../../models/User.js";
 import Profile from "../../models/Profile.js";
 import openai from "../../utils/openaiClient.js";
-export async function getallcourses(req, res) {
-  try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    await Course.updateMany(
-      { endAt: { $lte: today }, isHidden: false },
-      { $set: { isHidden: true } }
-    );
-
-    const courses = await Course.find({ isHidden: false })
-      .sort({ _id: -1 })
-      .populate("user", "profilepic firstName lastName");
-
-    res.json(courses);
-  } catch (err) {
-    console.error("Error:", err.message);
-    res.status(500).send("Server Error");
-  }
-}
+import Company from "../../models/Company.js";
 
 export const postCourse = async (req, res) => {
   const errors = validationResult(req);
@@ -35,19 +16,24 @@ export const postCourse = async (req, res) => {
 
     return res.status(400).json(formattedErrors);
   }
+  const companyId = req.user.id;
+  const companyProfile = await Company.findById(companyId);
+  if (!companyProfile) {
+    return res.status(404).json({ msg: "Company profile not found." });
+  }
+
   try {
     const course = new Course({
       user: req.user.id,
+      company: companyId,
       courseTitle: req.body.courseTitle,
-      companyName: req.body.companyName,
+      companyName: companyProfile.companyName,
       instructorName: req.body.instructorName,
       location: req.body.location,
       courseType: req.body.courseType,
       startAt: req.body.startAt,
       endAt: req.body.endAt,
       description: req.body.description,
-      capacity: req.body.capacity,
-      capacity: req.body.capacity,
       topics: req.body.topics,
       isHidden: false,
       requirements: req.body.requirements,
@@ -62,6 +48,27 @@ export const postCourse = async (req, res) => {
     res.status(500).send("Server Error");
   }
 };
+
+export async function getallcourses(req, res) {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    await Course.updateMany(
+      { endAt: { $lte: today }, isHidden: false },
+      { $set: { isHidden: true } }
+    );
+
+    const courses = await Course.find({ isHidden: false })
+      .sort({ _id: -1 })
+      .populate("company");
+
+    res.json(courses);
+  } catch (err) {
+    console.error("Error:", err.message);
+    res.status(500).send("Server Error");
+  }
+}
 
 export async function coursesearchbyid(req, res) {
   try {
@@ -345,7 +352,7 @@ export const getRecommendedCourses = async (req, res) => {
 
     const allCourses = await Course.find().populate("user");
 
-const prompt = `You are an expert in machine learning and educational recommendation systems. I need your expertise to analyze the user's profile and recommend the most suitable training courses.
+    const prompt = `You are an expert in machine learning and educational recommendation systems. I need your expertise to analyze the user's profile and recommend the most suitable training courses.
 
 Please follow the structured steps below to generate accurate and personalized course recommendations:
 
@@ -385,7 +392,9 @@ User Profile:
 - Name: ${user.firstName} ${user.lastName}
 - Skills: ${profile.skills?.join(", ") || "None"}
 - Education: ${profile.education?.join(", ") || "None"}
-- Experience: ${Array.isArray(profile.experience) ? profile.experience.length : 0} years
+- Experience: ${
+      Array.isArray(profile.experience) ? profile.experience.length : 0
+    } years
 - Languages: ${profile.languages?.join(", ") || "None"}
 - Training Courses: ${profile.trainingCourses?.join(", ") || "None"}
 

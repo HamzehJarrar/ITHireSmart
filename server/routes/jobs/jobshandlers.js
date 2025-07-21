@@ -83,7 +83,7 @@ export async function searchjobbykeyword(req, res) {
 export async function searchjobbyid(req, res) {
   try {
     const job = await Job.findById(req.params.jobId).populate(
-      "user",
+      "company",
       "profilepic firstName lastName"
     );
     if (!job) {

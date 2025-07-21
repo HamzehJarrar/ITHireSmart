@@ -7,6 +7,10 @@ const CourseSchema = new Schema(
       ref: "User",
       required: true,
     },
+    company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+    },
     courseTitle: {
       type: String,
       required: true,

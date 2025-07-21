@@ -245,17 +245,28 @@ function Courses() {
                 }}
               >
                 <Stack direction="row" spacing={1.5} alignItems="center">
-                  <img
-                    src="https://plus.unsplash.com/premium_photo-1720287601920-ee8c503af775?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjF8fGNvbXB1dGVyfGVufDB8fDB8fHww
-"
-                    alt="course"
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: "12px",
-                      objectFit: "cover",
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      mb: 1.2,
                     }}
-                  />
+                  >
+                    <img
+                      src={
+                        c.company?.profilepic ||
+                        "https://cdn-icons-png.flaticon.com/512/1055/1055687.png"
+                      }
+                      alt={courses.company?.companyName || "Company Logo"}
+                      style={{
+                        width: "48px",
+                        height: "48px",
+                        borderRadius: "50%",
+                        objectFit: "cover",
+                        marginRight: "12px",
+                      }}
+                    />
+                  </Box>
                   <Box>
                     <Typography
                       variant="subtitle2"

@@ -26,7 +26,6 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
 export async function resetPassword(req, res) {
   const { token } = req.query;
   const { password } = req.body;
@@ -37,7 +36,9 @@ export async function resetPassword(req, res) {
       resetPasswordExpiresAt: { $gt: Date.now() },
     });
     if (!user) {
-      return res.status(400).json({ message: "Invalid or expired reset token." });
+      return res
+        .status(400)
+        .json({ message: "Invalid or expired reset token." });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -47,7 +48,7 @@ export async function resetPassword(req, res) {
     await user.save();
 
     // Send success email after password reset
-   await sendResetSuccessEmail(user.firstName, user.email);
+    await sendResetSuccessEmail(user.firstName, user.email);
 
     res.status(200).json({
       success: true,
@@ -124,7 +125,6 @@ export async function register(req, res) {
     try {
       await sendVerificationEmail(firstName, email, verificationURL, "user");
     } catch (mailErr) {
-
       await User.findByIdAndDelete(user._id);
       await Profile.deleteOne({ user: user._id });
       return res.status(500).json({
@@ -221,6 +221,12 @@ export async function login(req, res) {
       return res.status(400).json({ errors: [{ msg: "Invalid Credentials" }] });
     }
 
+    if (!user.isVerified) {
+      return res.status(400).json({
+        errors: [{ msg: "You are not verified. Please check your email." }],
+      });
+    }
+
     if (user.role === "none") {
       return res.status(403).json({ msg: "Your account is disabled." });
     }
@@ -257,7 +263,6 @@ export async function login(req, res) {
   }
 }
 
-
 // POST /api/users/forgot-password
 export async function forgotPassword(req, res) {
   const { email } = req.body;
@@ -284,14 +289,14 @@ export async function forgotPassword(req, res) {
     await sendPasswordResetEmail(user.firstName, email, resetURL);
 
     res.json({
-      message: "If that email is registered, you’ll receive reset instructions.",
+      message:
+        "If that email is registered, you’ll receive reset instructions.",
     });
   } catch (error) {
     console.log("Error in forgotPassword ", error);
     res.status(400).json({ success: false, message: error.message });
   }
 }
-
 
 // -----------------------
 //  RESET PASSWORD
@@ -324,8 +329,6 @@ export async function forgotPassword(req, res) {
 //   await sendResetSuccessEmail(user.email);
 //   return res.json({ message: "Password has been reset successfully." });
 // }
-
-
 
 export async function myprofile(req, res) {
   try {
@@ -519,7 +522,6 @@ export async function getUserById(req, res) {
     console.error("getUserById error:", error.message);
     res.status(500).json({ msg: "Failed to fetch user", error: error.message });
   }
-
 }
 // -----------------------
 //  Enables or disables user account for admin dashboard.
@@ -536,8 +538,9 @@ export async function toggleUserStatus(req, res) {
     await user.save();
 
     res.status(200).json({
-      msg: `User account has been ${user.role === "none" ? "disabled" : "enabled"
-        }`,
+      msg: `User account has been ${
+        user.role === "none" ? "disabled" : "enabled"
+      }`,
       role: user.role,
     });
   } catch (error) {
@@ -629,30 +632,30 @@ Use this format:
     // Convert comma- or semicolon-separated strings to arrays
     const skills = extracted.Skills
       ? extracted.Skills.split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
+          .map((s) => s.trim())
+          .filter(Boolean)
       : [];
     const trainingCourses = extracted.TrainingCourses
       ? extracted.TrainingCourses.split(",")
-        .map((c) => c.trim())
-        .filter(Boolean)
+          .map((c) => c.trim())
+          .filter(Boolean)
       : [];
     const languages = extracted.Languages
       ? extracted.Languages.split(",")
-        .map((l) => l.trim())
-        .filter(Boolean)
+          .map((l) => l.trim())
+          .filter(Boolean)
       : [];
 
     // education & experience are separated by semicolons
     const education = extracted.Education
       ? extracted.Education.split(";")
-        .map((e) => e.trim())
-        .filter(Boolean)
+          .map((e) => e.trim())
+          .filter(Boolean)
       : [];
     const experience = extracted.Experience
       ? extracted.Experience.split(";")
-        .map((e) => e.trim())
-        .filter(Boolean)
+          .map((e) => e.trim())
+          .filter(Boolean)
       : [];
 
     const userId = req.body.userId;
@@ -700,17 +703,21 @@ export async function viewJobApplications(req, res) {
   try {
     const userId = req.user.id;
 
-    const jobs = await Job.find({ "applicants.user": userId }).select("jobTitle applicants");
+    const jobs = await Job.find({ "applicants.user": userId }).select(
+      "jobTitle applicants"
+    );
 
-    const filtered = jobs.map(job => {
-      const applicant = job.applicants.find(app => app.user.toString() === userId);
+    const filtered = jobs.map((job) => {
+      const applicant = job.applicants.find(
+        (app) => app.user.toString() === userId
+      );
       return {
         jobTitle: job.jobTitle,
         companyName: job.companyName,
         location: job.location,
         description: job.description,
         appliedAt: applicant?.appliedAt,
-        status: applicant?.status || "pending"
+        status: applicant?.status || "pending",
       };
     });
 
@@ -733,16 +740,22 @@ export async function viewTrainingApplications(req, res) {
         { enrolledUsers: userId },
         { acceptedParticipants: userId },
         { rejectedParticipants: userId },
-        { pendingParticipants: userId }
-      ]
-    }).select("trainingTitle companyName startAt endAt trainingType location enrolledUsers acceptedParticipants rejectedParticipants pendingParticipants");
+        { pendingParticipants: userId },
+      ],
+    }).select(
+      "trainingTitle companyName startAt endAt trainingType location enrolledUsers acceptedParticipants rejectedParticipants pendingParticipants"
+    );
 
-    const result = trainings.map(training => {
+    const result = trainings.map((training) => {
       let status = "pending";
-      if (training.acceptedParticipants.some(u => u.equals(userId))) status = "accepted";
-      else if (training.rejectedParticipants.some(u => u.equals(userId))) status = "rejected";
-      else if (training.enrolledUsers.some(u => u.equals(userId))) status = "enrolled";
-      else if (training.pendingParticipants.some(u => u.equals(userId))) status = "pending";
+      if (training.acceptedParticipants.some((u) => u.equals(userId)))
+        status = "accepted";
+      else if (training.rejectedParticipants.some((u) => u.equals(userId)))
+        status = "rejected";
+      else if (training.enrolledUsers.some((u) => u.equals(userId)))
+        status = "enrolled";
+      else if (training.pendingParticipants.some((u) => u.equals(userId)))
+        status = "pending";
 
       return {
         trainingTitle: training.trainingTitle,
@@ -751,7 +764,7 @@ export async function viewTrainingApplications(req, res) {
         endAt: training.endAt,
         trainingType: training.trainingType,
         location: training.location,
-        status
+        status,
       };
     });
 
@@ -772,15 +785,20 @@ export async function viewCourseApplications(req, res) {
       $or: [
         { students: userId },
         { acceptedStudents: userId },
-        { rejectedStudents: userId }
-      ]
-    }).select("courseTitle instructorName location courseType startAt endAt students acceptedStudents rejectedStudents");
+        { rejectedStudents: userId },
+      ],
+    }).select(
+      "courseTitle instructorName location courseType startAt endAt students acceptedStudents rejectedStudents"
+    );
 
-    const result = courses.map(course => {
+    const result = courses.map((course) => {
       let status = "pending";
-      if (course.acceptedStudents.some(u => u.equals(userId))) status = "accepted";
-      else if (course.rejectedStudents.some(u => u.equals(userId))) status = "rejected";
-      else if (course.students.some(u => u.equals(userId))) status = "applied";
+      if (course.acceptedStudents.some((u) => u.equals(userId)))
+        status = "accepted";
+      else if (course.rejectedStudents.some((u) => u.equals(userId)))
+        status = "rejected";
+      else if (course.students.some((u) => u.equals(userId)))
+        status = "applied";
 
       return {
         courseTitle: course.courseTitle,
@@ -789,7 +807,7 @@ export async function viewCourseApplications(req, res) {
         courseType: course.courseType,
         startAt: course.startAt,
         endAt: course.endAt,
-        status
+        status,
       };
     });
 
@@ -799,5 +817,3 @@ export async function viewCourseApplications(req, res) {
     res.status(500).json({ msg: "Server error", error: error.message });
   }
 }
-
-

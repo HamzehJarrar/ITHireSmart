@@ -1,16 +1,20 @@
 import Training from "../../models/Training.js";
 import { validationResult } from "express-validator";
+import Company from "../../models/Company.js";
 
 export async function postTraing(req, res) {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
+  const companyId = req.user.id;
 
   try {
     const training = new Training({
       user: req.user.id,
       trainingTitle: req.body.trainingTitle,
+      company: companyId,
+
       companyName: req.body.companyName,
       location: req.body.location,
       startAt: req.body.startAt,
@@ -43,7 +47,7 @@ export async function getalltrain(req, res) {
 
     const trainings = await Training.find({ isHidden: false })
       .sort({ createdAt: -1 })
-      .populate("user", "profilepic firstName lastName");
+      .populate("comapany", "profilepic firstName lastName");
 
     res.json(trainings);
   } catch (error) {
@@ -255,7 +259,11 @@ export async function acceptParticipant(req, res) {
       (id) => id.toString() !== participantId
     );
 
-    if (!training.acceptedParticipants.some(id => id.toString() === participantId)) {
+    if (
+      !training.acceptedParticipants.some(
+        (id) => id.toString() === participantId
+      )
+    ) {
       training.acceptedParticipants.push(participantId);
     }
 
