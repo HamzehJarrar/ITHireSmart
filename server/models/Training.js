@@ -7,6 +7,10 @@ const TrainingSchema = new Schema(
       ref: "User",
       required: true,
     },
+    company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+    },
     trainingTitle: {
       type: String,
       required: true,
@@ -49,11 +53,11 @@ const TrainingSchema = new Schema(
       min: 1,
     },
     topicsCovered: {
-      type: [String] ,
+      type: [String],
       required: true,
     },
     Requirements: {
-      type: [String] ,
+      type: [String],
       required: true,
     },
     enrolledUsers: [

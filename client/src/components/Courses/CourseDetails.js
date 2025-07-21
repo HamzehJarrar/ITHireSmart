@@ -8,7 +8,6 @@ import {
   Box,
   Button,
   Chip,
- // Avatar,
   Snackbar,
   Alert,
   Container,
@@ -57,7 +56,7 @@ function CourseDetails() {
       }, 2000);
     }
   };
-const userRole = localStorage.getItem("role");
+  const userRole = localStorage.getItem("role");
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -219,16 +218,25 @@ const userRole = localStorage.getItem("role");
                 mb: 4,
               }}
             >
-              <Box sx={{ mr: 1 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  mb: 1.2,
+                }}
+              >
                 <img
-                  src="https://plus.unsplash.com/premium_photo-1720287601920-ee8c503af775?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjF8fGNvbXB1dGVyfGVufDB8fDB8fHww"
-                  alt="Company Logo"
+                  src={
+                    course.company?.profilepic ||
+                    "https://cdn-icons-png.flaticon.com/512/1055/1055687.png"
+                  }
+                  alt={course.company?.companyName || "Company Logo"}
                   style={{
-                    width: "80px",
-                    height: "80px",
+                    width: "48px",
+                    height: "48px",
                     borderRadius: "50%",
                     objectFit: "cover",
-                    fontFamily: "Geist",
+                    marginRight: "12px",
                   }}
                 />
               </Box>
@@ -245,9 +253,11 @@ const userRole = localStorage.getItem("role");
                 >
                   {course.courseTitle
                     ? course.courseTitle
-                      .split(" ")
-                      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                      .join(" ")
+                        .split(" ")
+                        .map(
+                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                        )
+                        .join(" ")
                     : ""}
                 </Typography>
                 <Typography
@@ -258,7 +268,6 @@ const userRole = localStorage.getItem("role");
                     mb: 2,
                   }}
                 >
-                  
                   <span style={{ fontWeight: "bold", color: "#000000" }}>
                     {course.companyName ? course.companyName.toUpperCase() : ""}
                   </span>
@@ -387,27 +396,28 @@ const userRole = localStorage.getItem("role");
             </SectionCard>
 
             {/* Enroll Button */}
-           {userRole === "user" && (
+            {userRole === "user" && (
               <Box sx={{ textAlign: "center", mt: 4 }}>
-              <Button
-                variant="contained"
-                size="large"
-                onClick={handleEnroll}
-                sx={{
-                  bgcolor: "#000000",
-                  color: "#ffffff",
-                  px: 6,
-                  py: 1.5,
-                  fontWeight: 700,
-                  fontSize: "1rem",
-                  "&:hover": {
-                    bgcolor: "#333333",
-                  },
-                }}
-              >
-                Enroll Now
-              </Button>
-            </Box>)}
+                <Button
+                  variant="contained"
+                  size="large"
+                  onClick={handleEnroll}
+                  sx={{
+                    bgcolor: "#000000",
+                    color: "#ffffff",
+                    px: 6,
+                    py: 1.5,
+                    fontWeight: 700,
+                    fontSize: "1rem",
+                    "&:hover": {
+                      bgcolor: "#333333",
+                    },
+                  }}
+                >
+                  Enroll Now
+                </Button>
+              </Box>
+            )}
           </Box>
         </Card>
       </Container>
