@@ -73,7 +73,7 @@ router.get(
 // @route   POST /api/jobs/apply/:jobId
 // @desc    Apply for a job
 // @access  Public (for users)
-router.post("/apply/:jobId", handlers.jobapply);
+router.post("/apply/:jobId", auth ,handlers.jobapply);
 
 // @route   GET /api/jobs/:jobId/applicants
 // @desc    Get all applicants for a specific job
