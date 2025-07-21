@@ -461,3 +461,22 @@ export async function viewRejectedApplicants(req, res) {
     res.status(500).send(error.message);
   }
 }
+
+export async function acceptAllEnrollements(req, res) {
+  try {
+    const job = await Job.findById(req.params.jobId);
+    if (!job) {
+      return res.status(404).json({ msg: "Job not found" });
+    }
+
+    const newAcceptedParticipants = job.applicants.map((applicant) => applicant.user);
+    job.acceptedParticipants.push(...newAcceptedParticipants);
+    job.applicants = [];
+
+    await job.save();
+    res.json({ msg: "All applicants accepted successfully" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(error.message);
+  }
+}
