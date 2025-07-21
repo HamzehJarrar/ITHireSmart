@@ -84,8 +84,8 @@ router.get(
   handlers.viewApplicants
 );
 
-router
-  .route("/:jobId/applicants/accepted")
+
+router.route("/:jobId/applicants/accepted")
   .get(auth, checkRole("company"), handlers.viewAcceptedApplicants);
 
 // @route   GET /api/jobs/:jobId/applicants/rejected
@@ -102,8 +102,8 @@ router
   .route("/:jobId/applicants/reject")
   .patch(auth, checkRole("company"), handlers.setJobRejected);
 
-router
-  .route("/:jobId/applicants/acceptAll")
+
+router.route("/:jobId/applicants/acceptAll")
   .patch(auth, checkRole("company"), handlers.acceptAllEnrollements);
 
 // @route   GET /api/jobs/:jobId/recommendations
