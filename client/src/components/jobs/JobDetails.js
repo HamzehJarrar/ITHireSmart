@@ -369,10 +369,7 @@ function JobDetails() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <CalendarMonth sx={{ color: "#666666", fontSize: "1.25rem" }} />
               <Typography variant="body2" sx={{ color: "#666666" }}>
-                Posted:{" "}
-                {job.date
-                  ? new Date(job.date).toLocaleDateString()
-                  : "Recently"}
+                Posted: {new Date(job.from).toISOString().split("T")[0]}
               </Typography>
 
               <Typography variant="body2" sx={{ color: "#666666", mx: 1 }}>

@@ -23,6 +23,11 @@ export const ViewApplicants = (id) => API.get(`/jobs/${id}/applicants`);
 export const searchJobByKeyword = (keyword) =>
   API.get(`/jobs/search?keyword=${keyword}`);
 
+export const getRecommendedApplicants = (jobId) =>
+  API.get(`/jobs/${jobId}/recommendations`);
+
+
+
 export const getAcceptedApplicants = (jobId) =>
   API.get(`/jobs/${jobId}/applicants/accepted`);
 
@@ -35,5 +40,5 @@ export const acceptApplicant = (jobId, applicantId) =>
 export const rejectApplicant = (jobId, applicantId) =>
   API.patch(`/jobs/${jobId}/applicants/reject`, { applicantId });
 
-export const getRecommendedApplicants = (jobId) =>
-  API.get(`/jobs/${jobId}/recommendations`);
+export const setPendingApplicant = (jobId, userId) =>
+  API.patch(`/jobs/${jobId}/applicants/pending`, { applicantId: userId });

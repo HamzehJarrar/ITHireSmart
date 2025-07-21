@@ -701,27 +701,44 @@ Use this format:
 // -----------------------
 export async function viewJobApplications(req, res) {
   try {
-    const userId = req.user.id;
+    const userId = new mongoose.Types.ObjectId(req.user.id);
 
-    const jobs = await Job.find({ "applicants.user": userId }).select(
-      "jobTitle applicants"
+    const jobs = await Job.find({
+      $or: [
+        { applicants: { $elemMatch: { user: userId } } },
+        { acceptedParticipants: userId },
+        { rejectedParticipants: userId },
+      ],
+    }).select(
+      "jobTitle companyName from to jobType location applicants acceptedParticipants rejectedParticipants"
     );
 
-    const filtered = jobs.map((job) => {
-      const applicant = job.applicants.find(
-        (app) => app.user.toString() === userId
-      );
+    const result = jobs.map((job) => {
+      let status = "pending";
+
+      if (job.acceptedParticipants.some((u) => u.equals(userId))) {
+        status = "accepted";
+      } else if (job.rejectedParticipants.some((u) => u.equals(userId))) {
+        status = "rejected";
+      } else if (job.applicants.some((a) => a.user.equals(userId))) {
+        status = "applied";
+      }
+
+      const applicant = job.applicants.find((a) => a.user.equals(userId));
+
       return {
         jobTitle: job.jobTitle,
         companyName: job.companyName,
+        startAt: job.from,
+        endAt: job.to,
+        jobType: job.jobType,
         location: job.location,
-        description: job.description,
         appliedAt: applicant?.appliedAt,
-        status: applicant?.status || "pending",
+        status,
       };
     });
 
-    res.json(filtered);
+    res.json(result);
   } catch (error) {
     console.error("Error fetching job applications:", error.message);
     res.status(500).json({ msg: "Server error", error: error.message });

@@ -27,6 +27,11 @@ import {
   getTrainingApplications,
   getCourseApplications,
 } from "../../API/API";
+import {
+  getAcceptedApplicants,
+  getRejectedApplicants,
+} from "../../API/jobsAPI";
+import { useParams } from "react-router-dom";
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -89,6 +94,7 @@ const ApplicationsPage = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+  const { jobId } = useParams();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -103,6 +109,7 @@ const ApplicationsPage = () => {
         } else if (value === 2) {
           const { data } = await getJobApplications();
           setJobApplications(data);
+          console.log(data);
         }
       } catch (error) {
         console.error("Error fetching applications:", error);
@@ -217,13 +224,10 @@ const ApplicationsPage = () => {
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <LocationIcon fontSize="small" color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        {app.location} • {app.trainingType}
+                        {app.location}
                       </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <CalendarIcon fontSize="small" color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        {formatDate(app.startAt)} - {formatDate(app.endAt)}
+                        {app.trainingType}
                       </Typography>
                     </Box>
                   </Stack>
@@ -285,13 +289,10 @@ const ApplicationsPage = () => {
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <LocationIcon fontSize="small" color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        {app.location} • {app.courseType}
+                        {app.location}
                       </Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <CalendarIcon fontSize="small" color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        {formatDate(app.startAt)} - {formatDate(app.endAt)}
+                        {app.courseType}
                       </Typography>
                     </Box>
                   </Stack>

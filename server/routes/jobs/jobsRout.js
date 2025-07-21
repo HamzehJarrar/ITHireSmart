@@ -84,13 +84,15 @@ router.get(
   handlers.viewApplicants
 );
 
-router.route("/:jobId/applicants/accepted").get(auth, checkRole("company"), handlers.viewAcceptedApplicants);
+router
+  .route("/:jobId/applicants/accepted")
+  .get(auth, handlers.viewAcceptedApplicants);
 
 // @route   GET /api/jobs/:jobId/applicants/rejected
 // @desc    Get all rejected applicants for a specific job
 router
   .route("/:jobId/applicants/rejected")
-  .get(auth, checkRole("company"), handlers.viewRejectedApplicants);
+  .get(auth, handlers.viewRejectedApplicants);
 
 router
   .route("/:jobId/applicants/accept")
@@ -100,7 +102,13 @@ router
   .route("/:jobId/applicants/reject")
   .patch(auth, checkRole("company"), handlers.setJobRejected);
 
-router.route("/:jobId/applicants/acceptAll").patch(auth, checkRole("company"), handlers.acceptAllEnrollements);
+router
+  .route("/:jobId/applicants/acceptAll")
+  .patch(auth, checkRole("company"), handlers.acceptAllEnrollements);
+
+router
+  .route("/:jobId/applicants/pending")
+  .patch(auth, checkRole("company"), handlers.setJobPending);
 
 // @route   GET /api/jobs/:jobId/recommendations
 // @desc    Get recommended applicants for a specific job

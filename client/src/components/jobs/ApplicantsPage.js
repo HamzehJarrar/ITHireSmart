@@ -4,10 +4,12 @@ import {
   ViewApplicants,
   acceptApplicant,
   rejectApplicant,
-  getAcceptedApplicants, // استيراد الدالة الجديدة
-  getRejectedApplicants, // استيراد الدالة الجديدة
+  getAcceptedApplicants,
+  getRejectedApplicants,
+  setPendingApplicant,
 } from "../../API/jobsAPI";
 import { GetRecommendedApplicants } from "../../API/API";
+import { orange } from "@mui/material/colors";
 import {
   Box,
   Typography,
@@ -115,11 +117,9 @@ const ApplicantsPage = () => {
     setDrawerOpen(false);
   };
 
-  // دوال القبول والرفض
   const handleAccept = async (userId) => {
     try {
       await acceptApplicant(jobId, userId);
-      // إعادة جلب البيانات لتحديث الواجهة
       fetchAllApplicantsData();
     } catch (error) {
       console.error("Failed to accept applicant:", error);
@@ -130,7 +130,6 @@ const ApplicantsPage = () => {
   const handleReject = async (userId) => {
     try {
       await rejectApplicant(jobId, userId);
-      // إعادة جلب البيانات لتحديث الواجهة
       fetchAllApplicantsData();
     } catch (error) {
       console.error("Failed to reject applicant:", error);
@@ -138,7 +137,16 @@ const ApplicantsPage = () => {
     }
   };
 
-  // فلترة المستخدمين بناءً على البحث
+  const handlePending = async (userId) => {
+    try {
+      await setPendingApplicant(jobId, userId);
+      fetchAllApplicantsData();
+    } catch (error) {
+      console.error("Failed to set applicant to pending:", error);
+      alert("An error occurred while setting applicant to pending.");
+    }
+  };
+
   const filterUsers = (list, hasAppliedAt = false) => {
     const searchLower = search.toLowerCase();
     return list.filter((item) => {
@@ -169,9 +177,11 @@ const ApplicantsPage = () => {
     const user = tabValue === "pending" ? item.user : item;
     const appliedAt = tabValue === "pending" ? item.appliedAt : null;
 
-    if (!user) return null; // تجنب الأخطاء إذا كان المستخدم غير موجود
+    if (!user) return null;
 
-    const name = `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Unknown Applicant";
+    const name =
+      `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+      "Unknown Applicant";
     const email = user.email || "No email provided";
     const profilePic = user.profilepic?.url;
     const appliedDate = appliedAt ? new Date(appliedAt).toLocaleString() : "";
@@ -195,19 +205,30 @@ const ApplicantsPage = () => {
             <Avatar
               alt={`${name} Avatar`}
               src={profilePic}
-              sx={{ width: 56, height: 56, bgcolor: "#e3f2fd", color: "#1976d2" }}
+              sx={{
+                width: 56,
+                height: 56,
+                bgcolor: "#e3f2fd",
+                color: "#1976d2",
+              }}
             >
               {!profilePic && name?.[0]}
             </Avatar>
           }
-          title={<Typography variant="h6" sx={{ fontWeight: "medium" }}>{name}</Typography>}
+          title={
+            <Typography variant="h6" sx={{ fontWeight: "medium" }}>
+              {name}
+            </Typography>
+          }
           subheader={appliedDate ? `Applied on ${appliedDate}` : ""}
         />
         <Divider />
         <CardContent sx={{ flexGrow: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <Mail fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-            <Typography variant="body2" color="text.secondary">{email}</Typography>
+            <Typography variant="body2" color="text.secondary">
+              {email}
+            </Typography>
           </Box>
           <Chip
             size="small"
@@ -219,9 +240,16 @@ const ApplicantsPage = () => {
             onClick={() => navigate(`/user/${user._id}`)}
           />
         </CardContent>
-        {/* إظهار الأزرار فقط في تبويب "Pending" */}
+
         {tabValue === "pending" && (
-          <Box sx={{ p: 2, display: "flex", gap: 1, borderTop: "1px solid #f0f0f0" }}>
+          <Box
+            sx={{
+              p: 2,
+              display: "flex",
+              gap: 1,
+              borderTop: "1px solid #f0f0f0",
+            }}
+          >
             <Button
               variant="contained"
               color="success"
@@ -240,6 +268,74 @@ const ApplicantsPage = () => {
             </Button>
           </Box>
         )}
+        {tabValue === "accepted" && (
+          <Box
+            sx={{
+              p: 2,
+              display: "flex",
+              gap: 1,
+              borderTop: "1px solid #f0f0f0",
+            }}
+          >
+            <Button
+              variant="contained"
+              onClick={() => handlePending(user._id)}
+              sx={{
+                flex: 1,
+                backgroundColor: orange[500],
+                color: "white",
+                "&:hover": {
+                  backgroundColor: orange[700],
+                },
+              }}
+            >
+              {" "}
+              Pending
+            </Button>
+            <Button
+              variant="outlined"
+              color="error"
+              onClick={() => handleReject(user._id)}
+              sx={{ flex: 1 }}
+            >
+              Reject
+            </Button>
+          </Box>
+        )}
+        {tabValue === "rejected" && (
+          <Box
+            sx={{
+              p: 2,
+              display: "flex",
+              gap: 1,
+              borderTop: "1px solid #f0f0f0",
+            }}
+          >
+            <Button
+              variant="contained"
+              color="success"
+              onClick={() => handleAccept(user._id)}
+              sx={{ flex: 1 }}
+            >
+              Accept
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => handleAccept(user._id)}
+              sx={{
+                flex: 1,
+                backgroundColor: orange[500],
+                color: "white",
+                "&:hover": {
+                  backgroundColor: orange[700],
+                },
+              }}
+            >
+              {" "}
+              Pending
+            </Button>
+          </Box>
+        )}
       </Card>
     );
   };
@@ -254,7 +350,11 @@ const ApplicantsPage = () => {
           width: { sm: `calc(100% - ${drawerWidth}px)` },
         }}
       >
-        <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold", mb: 3 }}>
+        <Typography
+          variant="h4"
+          gutterBottom
+          sx={{ fontWeight: "bold", mb: 3 }}
+        >
           Applicants
           <Chip
             label={`Pending: ${applicants.length}, Accepted: ${acceptedApplicants.length}, Rejected: ${rejectedApplicants.length}`}
@@ -263,19 +363,48 @@ const ApplicantsPage = () => {
           />
         </Typography>
 
-        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap" mb={2}>
-            <Button
-              variant="contained"
-              size="medium"
-              startIcon={<ArrowBackIosNewIcon />}
-              sx={{ bgcolor: "black", textTransform: "none", borderRadius: 2, color: "white" }}
-              onClick={() => navigate(-1)}
-            >
-              Back
-            </Button>
-            <Button variant="contained" color="primary" onClick={fetchRecommendations}>AI Recommend Top 5</Button>
-            <Button variant="outlined" color="secondary" onClick={loadSavedRecommendations}>Show Saved</Button>
-            <Button variant="outlined" color="error" onClick={clearSavedRecommendations}>Clear Saved</Button>
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          flexWrap="wrap"
+          mb={2}
+        >
+          <Button
+            variant="contained"
+            size="medium"
+            startIcon={<ArrowBackIosNewIcon />}
+            sx={{
+              bgcolor: "black",
+              textTransform: "none",
+              borderRadius: 2,
+              color: "white",
+            }}
+            onClick={() => navigate(-1)}
+          >
+            Back
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={fetchRecommendations}
+          >
+            AI Recommend Top 5
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={loadSavedRecommendations}
+          >
+            Show Saved
+          </Button>
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={clearSavedRecommendations}
+          >
+            Clear Saved
+          </Button>
         </Stack>
 
         <TextField
@@ -301,15 +430,25 @@ const ApplicantsPage = () => {
           indicatorColor="primary"
         >
           <Tab label={`Pending (${filteredPending.length})`} value="pending" />
-          <Tab label={`Accepted (${filteredAccepted.length})`} value="accepted" />
-          <Tab label={`Rejected (${filteredRejected.length})`} value="rejected" />
+          <Tab
+            label={`Accepted (${filteredAccepted.length})`}
+            value="accepted"
+          />
+          <Tab
+            label={`Rejected (${filteredRejected.length})`}
+            value="rejected"
+          />
         </Tabs>
 
         {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}><CircularProgress /></Box>
+          <Box sx={{ display: "flex", justifyContent: "center", py: 5 }}>
+            <CircularProgress />
+          </Box>
         ) : displayList.length === 0 ? (
           <Card sx={{ p: 4, textAlign: "center", bgcolor: "#f5f5f5" }}>
-            <Typography variant="h6" color="text.secondary">No applicants found.</Typography>
+            <Typography variant="h6" color="text.secondary">
+              No applicants found.
+            </Typography>
           </Card>
         ) : (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
@@ -322,9 +461,19 @@ const ApplicantsPage = () => {
         anchor="right"
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        sx={{ width: drawerWidth, flexShrink: 0, "& .MuiDrawer-paper": { width: drawerWidth, boxSizing: "border-box", p: 2 } }}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          "& .MuiDrawer-paper": {
+            width: drawerWidth,
+            boxSizing: "border-box",
+            p: 2,
+          },
+        }}
       >
-        <Typography variant="h6" gutterBottom>Top 5 Recommended Applicants</Typography>
+        <Typography variant="h6" gutterBottom>
+          Top 5 Recommended Applicants
+        </Typography>
         {recommended.length === 0 ? (
           <Typography>No recommendations found.</Typography>
         ) : (
@@ -332,7 +481,12 @@ const ApplicantsPage = () => {
             {recommended.map((rec, index) => (
               <ListItem key={index} alignItems="flex-start" divider>
                 <ListItemText
-                  primary={<>{rec.name || "Unknown"} — Score: {rec.match_score ?? "N/A"}%</>}
+                  primary={
+                    <>
+                      {rec.name || "Unknown"} — Score:{" "}
+                      {rec.match_score ?? "N/A"}%
+                    </>
+                  }
                   secondary={<>{rec.justification || ""}</>}
                 />
               </ListItem>

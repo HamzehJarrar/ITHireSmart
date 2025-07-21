@@ -26,7 +26,6 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Person } from "@mui/icons-material";
-
 const StyledAppBar = styled(AppBar)({
   background: "black",
   boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
