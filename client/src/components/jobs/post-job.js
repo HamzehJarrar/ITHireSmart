@@ -252,7 +252,8 @@ const PostJob = () => {
             fullWidth
             margin="normal"
             multiline
-            rows={3}
+            minRows={4}
+            maxRows={10}
           />
 
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
@@ -354,7 +355,8 @@ const PostJob = () => {
             fullWidth
             margin="normal"
             multiline
-            rows={2}
+            minRows={2}
+            maxRows={10}
           />
           <TextField
             label="Responsibilities (comma separated)"
@@ -367,7 +369,8 @@ const PostJob = () => {
             fullWidth
             margin="normal"
             multiline
-            rows={2}
+            minRows={2}
+            maxRows={10}
           />
 
           <Box sx={{ textAlign: "center", mt: 2 }}>

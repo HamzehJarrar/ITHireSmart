@@ -46,6 +46,7 @@ import CompanyProfilePage from "./components/Company/CompanyProfilePage";
 import EditCompanyProfile from "./components/Company/EditCompanyProfile";
 import ResetPassword from "./components/auth/ResetPassword";
 import AdminDashboard from "./components/Admin/AdminDashboard";
+import ApplicationsPage from "./components/users/ApplicationsPage";
 function App() {
   const location = useLocation();
 
@@ -131,6 +132,7 @@ function App() {
             element={<ConfirmCompanyEmail />}
           />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/ApplicationsPage" element={<ApplicationsPage />} />
 
           {/* Protected Routes for company role */}
           <Route element={<ProtectedRoute allowedRole="company" />}>
@@ -149,6 +151,8 @@ function App() {
               path="/courses/:courseId/applicants"
               element={<CoursesApplicants />}
             />
+            <Route path="/SearchUsers" element={<AdminDashboard />} />
+
             <Route path="/companytrainings" element={<CompanyTrainings />} />
             <Route path="/post-training" element={<PostTraining />} />
             <Route

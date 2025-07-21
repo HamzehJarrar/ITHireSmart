@@ -274,7 +274,7 @@ export async function getRecommendedApplicants(req, res) {
 
     const filteredApplicants = applicantsData.filter(Boolean);
 
-const prompt = `You are a seasoned recruitment expert with extensive experience in talent acquisition, CV analysis, and matching applicants to job requirements. I want to leverage your expertise to professionally evaluate the applicants for the following position.
+    const prompt = `You are a seasoned recruitment expert with extensive experience in talent acquisition, CV analysis, and matching applicants to job requirements. I want to leverage your expertise to professionally evaluate the applicants for the following position.
 
 Job Details:
 - Title: ${job.jobTitle}
@@ -322,7 +322,6 @@ Please proceed with the task as follows:
 • Strictly return no more than 5 applicants
 
 Rely on your deep understanding of competency analysis and qualification assessment to provide accurate recommendations that reflect a full understanding of the job’s needs. Focus on quality over quantity.`;
-
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o",

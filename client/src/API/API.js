@@ -46,3 +46,12 @@ export const verifyEmail = (token) =>
 
 export const resetPassword = ({ token, password }) =>
   API.post(`/users/reset-password?token=${token}`, { password });
+
+export const getJobApplications = () => API.get("/users/viewJobApplications");
+
+export const getTrainingApplications = () =>
+  API.get("/users/viewTrainingApplications");
+
+export const getCourseApplications = () =>
+  API.get("/users/viewCourseApplications");
+

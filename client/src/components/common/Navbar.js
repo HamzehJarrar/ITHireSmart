@@ -26,6 +26,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { Person } from "@mui/icons-material";
+
 const StyledAppBar = styled(AppBar)({
   background: "black",
   boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
@@ -90,6 +91,7 @@ const Navbar = () => {
   const [navAnchor, setNavAnchor] = useState(null);
   const [userAnchor, setUserAnchor] = useState(null);
   const [scrolled, setScrolled] = useState(false);
+
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const userId = localStorage.getItem("userId");
@@ -107,6 +109,12 @@ const Navbar = () => {
       : []),
     ...(role === "admin"
       ? [{ name: "Admin Dashboard", path: "/AdminDashboard" }]
+      : []),
+    ...(localStorage.getItem("role") === "user"
+      ? [{ name: "Applications", path: "/ApplicationsPage" }]
+      : []),
+    ...(localStorage.getItem("role") === "company"
+      ? [{ name: "Candidates", path: "/SearchUsers" }]
       : []),
   ];
 
@@ -187,7 +195,13 @@ const Navbar = () => {
       sx={{ py: scrolled ? 0.5 : 1, transition: "0.3s ease" }}
     >
       <Container maxWidth="xl">
-        <Toolbar sx={{ justifyContent: "space-between" }}>
+        <Toolbar
+          sx={{
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
           {/* Logo */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}

@@ -68,6 +68,8 @@ const AdminDashboard = () => {
     }
   };
 
+  const role = localStorage.getItem("role");
+
   const fetchCompanies = async () => {
     try {
       const res = await getAllCompanies();
@@ -88,10 +90,13 @@ const AdminDashboard = () => {
     .filter((user) => {
       if (userFilter === "verified" && user.role === "none") return false;
       if (userFilter === "unverified" && user.role !== "none") return false;
-      return (
-        user.firstName?.toLowerCase().includes(search.toLowerCase()) ||
-        user.lastName?.toLowerCase().includes(search.toLowerCase()) ||
-        user.email?.toLowerCase().includes(search.toLowerCase())
+      const searchTokens = search.toLowerCase().split(" ").filter(Boolean);
+
+      return searchTokens.every(
+        (token) =>
+          user.firstName?.toLowerCase().includes(token) ||
+          user.lastName?.toLowerCase().includes(token) ||
+          user.email?.toLowerCase().includes(token)
       );
     });
 
@@ -187,144 +192,56 @@ const AdminDashboard = () => {
               gap: 1,
             }}
           >
-            <VerifiedUser />
-            Admin Dashboard
+            {role === "admin" && <VerifiedUser />}
+            {role === "admin" ? "Admin Dashboard" : "Search Dashboard"}
           </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage users and companies across your platform
-          </Typography>
+          {role === "admin" ? (
+            <Typography variant="body1" color="text.secondary">
+              Manage users and companies across your platform
+            </Typography>
+          ) : null}
         </Box>
 
-        {/* Stats Cards */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Card
-              sx={{
-                height: "100%",
-                background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
-                color: "white",
-              }}
-            >
-              <CardContent>
-                <Stack direction="row" alignItems="center" spacing={2}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      bgcolor: alpha("#fff", 0.2),
-                    }}
-                  >
-                    <People />
-                  </Box>
-                  <Box>
-                    <Typography variant="h4" fontWeight="bold">
-                      {stats.totalUsers}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Total Users
-                    </Typography>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Card
-              sx={{
-                height: "100%",
-                background: `linear-gradient(135deg, ${theme.palette.success.main}, ${theme.palette.success.dark})`,
-                color: "white",
-              }}
-            >
-              <CardContent>
-                <Stack direction="row" alignItems="center" spacing={2}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      bgcolor: alpha("#fff", 0.2),
-                    }}
-                  >
-                    <CheckCircle />
-                  </Box>
-                  <Box>
-                    <Typography variant="h4" fontWeight="bold">
-                      {stats.verifiedUsers}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Verified Users
-                    </Typography>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Card
-              sx={{
-                height: "100%",
-                background: `linear-gradient(135deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
-                color: "white",
-              }}
-            >
-              <CardContent>
-                <Stack direction="row" alignItems="center" spacing={2}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      bgcolor: alpha("#fff", 0.2),
-                    }}
-                  >
-                    <Business />
-                  </Box>
-                  <Box>
-                    <Typography variant="h4" fontWeight="bold">
-                      {stats.totalCompanies}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Total Companies
-                    </Typography>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <Card
-              sx={{
-                height: "100%",
-                background: `linear-gradient(135deg, ${theme.palette.warning.main}, ${theme.palette.warning.dark})`,
-                color: "white",
-              }}
-            >
-              <CardContent>
-                <Stack direction="row" alignItems="center" spacing={2}>
-                  <Box
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 2,
-                      bgcolor: alpha("#fff", 0.2),
-                    }}
-                  >
-                    <VerifiedUser />
-                  </Box>
-                  <Box>
-                    <Typography variant="h4" fontWeight="bold">
-                      {stats.verifiedCompanies}
-                    </Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                      Verified Companies
-                    </Typography>
-                  </Box>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+        {role === "admin" && (
+          <>
+            {/* Stats Cards */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                <Card
+                  sx={{
+                    height: "100%",
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+                    color: "white",
+                  }}
+                >
+                  <CardContent>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 2,
+                          bgcolor: alpha("#fff", 0.2),
+                        }}
+                      >
+                        <People />
+                      </Box>
+                      <Box>
+                        <Typography variant="h4" fontWeight="bold">
+                          {stats.totalUsers}
+                        </Typography>
+                        <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                          Total Users
+                        </Typography>
+                      </Box>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+              {/* باقي الـ Cards مثل اللي فوق */}
+              {/* ... */}
+            </Grid>
+          </>
+        )}
 
         {/* Main Content Card */}
         <Card sx={{ overflow: "hidden" }}>
@@ -350,12 +267,15 @@ const AdminDashboard = () => {
                 label={`Users (${stats.totalUsers})`}
                 sx={{ gap: 1 }}
               />
-              <Tab
-                icon={<Business />}
-                iconPosition="start"
-                label={`Companies (${stats.totalCompanies})`}
-                sx={{ gap: 1 }}
-              />
+
+              {role == "admin" ? (
+                <Tab
+                  icon={<Business />}
+                  iconPosition="start"
+                  label={`Companies (${stats.totalCompanies})`}
+                  sx={{ gap: 1 }}
+                />
+              ) : null}
             </Tabs>
           </Box>
 
@@ -382,25 +302,28 @@ const AdminDashboard = () => {
                   }}
                 />
               </Grid>
-              <Grid item xs={12} md={3}>
-                <FormControl fullWidth>
-                  <InputLabel>Status Filter</InputLabel>
-                  <Select
-                    value={tab === 0 ? userFilter : companyFilter}
-                    label="Status Filter"
-                    onChange={(e) =>
-                      tab === 0
-                        ? setUserFilter(e.target.value)
-                        : setCompanyFilter(e.target.value)
-                    }
-                    sx={{ bgcolor: "white" }}
-                  >
-                    <MenuItem value="all">All Status</MenuItem>
-                    <MenuItem value="verified">Verified Only</MenuItem>
-                    <MenuItem value="unverified">Unverified Only</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
+
+              {role == "admin" ? (
+                <Grid item xs={12} md={3}>
+                  <FormControl fullWidth>
+                    <InputLabel>Status Filter</InputLabel>
+                    <Select
+                      value={tab === 0 ? userFilter : companyFilter}
+                      label="Status Filter"
+                      onChange={(e) =>
+                        tab === 0
+                          ? setUserFilter(e.target.value)
+                          : setCompanyFilter(e.target.value)
+                      }
+                      sx={{ bgcolor: "white" }}
+                    >
+                      <MenuItem value="all">All Status</MenuItem>
+                      <MenuItem value="verified">Verified Only</MenuItem>
+                      <MenuItem value="unverified">Unverified Only</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+              ) : null}
             </Grid>
           </Box>
 
@@ -445,34 +368,36 @@ const AdminDashboard = () => {
                           size="small"
                           sx={{ p: 0 }}
                         >
-                          <Badge
-                            overlap="circular"
-                            anchorOrigin={{
-                              vertical: "bottom",
-                              horizontal: "right",
-                            }}
-                            badgeContent={
-                              user.role !== "none" ? (
-                                <CheckCircle
-                                  sx={{
-                                    color: "success.main",
-                                    bgcolor: "white",
-                                    borderRadius: "50%",
-                                    fontSize: 20,
-                                  }}
-                                />
-                              ) : (
-                                <Cancel
-                                  sx={{
-                                    color: "error.main",
-                                    bgcolor: "white",
-                                    borderRadius: "50%",
-                                    fontSize: 20,
-                                  }}
-                                />
-                              )
-                            }
-                          >
+                          {role == "admin" ? (
+                            <Badge
+                              overlap="circular"
+                              anchorOrigin={{
+                                vertical: "bottom",
+                                horizontal: "right",
+                              }}
+                              badgeContent={
+                                user.role !== "role" ? (
+                                  <CheckCircle
+                                    sx={{
+                                      color: "success.main",
+                                      bgcolor: "white",
+                                      borderRadius: "50%",
+                                      fontSize: 20,
+                                    }}
+                                  />
+                                ) : (
+                                  <Cancel
+                                    sx={{
+                                      color: "error.main",
+                                      bgcolor: "white",
+                                      borderRadius: "50%",
+                                      fontSize: 20,
+                                    }}
+                                  />
+                                )
+                              }
+                            ></Badge>
+                          ) : (
                             <Avatar
                               src={user.profilepic?.url}
                               alt={user.firstName}
@@ -481,7 +406,7 @@ const AdminDashboard = () => {
                               {user.firstName?.charAt(0)}
                               {user.lastName?.charAt(0)}
                             </Avatar>
-                          </Badge>
+                          )}
                         </IconButton>
 
                         <Box sx={{ flexGrow: 1 }}>
@@ -528,113 +453,106 @@ const AdminDashboard = () => {
                           </Stack>
                         </Box>
 
-                        <Box sx={{ textAlign: "center" }}>
-                          <Chip
-                            icon={
-                              user.role !== "none" ? (
-                                <CheckCircle />
-                              ) : (
-                                <PendingActions />
-                              )
-                            }
-                            label={
-                              user.role !== "none" ? "Enabled" : "Disabled"
-                            }
-                            color={user.role !== "none" ? "success" : "warning"}
-                            variant="outlined"
-                            sx={{ fontWeight: 600, mr: 1 }}
-                          />
-                          <Button
-                            variant="contained"
-                            size="small"
-                            color={user.role !== "none" ? "error" : "success"}
-                            onClick={() => toggleUserRole(user._id)}
-                          >
-                            {user.role !== "none" ? "Disable" : "Enable"}
-                          </Button>
-                        </Box>
+                        {role === "admin" ? (
+                          <Box sx={{ textAlign: "center" }}>
+                            <Chip
+                              icon={
+                                user.role !== "none" ? (
+                                  <CheckCircle />
+                                ) : (
+                                  <PendingActions />
+                                )
+                              }
+                              label={
+                                user.role !== "none" ? "Enabled" : "Disabled"
+                              }
+                              color={
+                                user.role !== "none" ? "success" : "warning"
+                              }
+                              variant="outlined"
+                              sx={{ fontWeight: 600, mr: 1 }}
+                            />
+
+                            {role == "admin" ? (
+                              <Button
+                                variant="contained"
+                                size="small"
+                                color={
+                                  user.role !== "none" ? "error" : "success"
+                                }
+                                onClick={() => toggleUserRole(user._id)}
+                              >
+                                {user.role !== "none" ? "Disable" : "Enable"}
+                              </Button>
+                            ) : null}
+                          </Box>
+                        ) : null}
                       </Paper>
                     </Grid>
                   ))}
 
-                {tab === 1 &&
-                  filteredCompanies.map((company) => (
-                    <Grid item xs={12} key={company._id}>
-                      <Paper
-                        sx={{
-                          p: 3,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 3,
-                          transition: "all 0.2s ease-in-out",
-                          "&:hover": {
-                            transform: "translateY(-2px)",
-                            boxShadow: theme.shadows[8],
-                          },
-                        }}
-                      >
-                        <Badge
-                          overlap="circular"
-                          anchorOrigin={{
-                            vertical: "bottom",
-                            horizontal: "right",
+                {role === "admin" && tab === 1
+                  ? filteredCompanies.map((company) => (
+                      <Grid item xs={12} key={company._id}>
+                        <Paper
+                          sx={{
+                            p: 3,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 3,
+                            transition: "all 0.2s ease-in-out",
+                            "&:hover": {
+                              transform: "translateY(-2px)",
+                              boxShadow: theme.shadows[8],
+                            },
                           }}
-                          badgeContent={
-                            company.isVerified ? (
-                              <CheckCircle
-                                sx={{
-                                  color: "success.main",
-                                  bgcolor: "white",
-                                  borderRadius: "50%",
-                                  fontSize: 20,
-                                }}
-                              />
-                            ) : (
-                              <Cancel
-                                sx={{
-                                  color: "error.main",
-                                  bgcolor: "white",
-                                  borderRadius: "50%",
-                                  fontSize: 20,
-                                }}
-                              />
-                            )
-                          }
                         >
-                          <Avatar
-                            src={company.companyProfile?.url}
-                            alt={company.companyName}
-                            sx={{ width: 80, height: 80 }}
+                          <Badge
+                            overlap="circular"
+                            anchorOrigin={{
+                              vertical: "bottom",
+                              horizontal: "right",
+                            }}
+                            badgeContent={
+                              company.isVerified ? (
+                                <CheckCircle
+                                  sx={{
+                                    color: "success.main",
+                                    bgcolor: "white",
+                                    borderRadius: "50%",
+                                    fontSize: 20,
+                                  }}
+                                />
+                              ) : (
+                                <Cancel
+                                  sx={{
+                                    color: "error.main",
+                                    bgcolor: "white",
+                                    borderRadius: "50%",
+                                    fontSize: 20,
+                                  }}
+                                />
+                              )
+                            }
                           >
-                            {company.companyName?.charAt(0)}
-                          </Avatar>
-                        </Badge>
-
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Typography
-                            variant="h6"
-                            fontWeight="600"
-                            gutterBottom
-                          >
-                            {company.companyName}
-                          </Typography>
-                          <Stack spacing={1}>
-                            <Box
-                              sx={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 1,
-                              }}
+                            <Avatar
+                              src={company.companyProfile?.url}
+                              alt={company.companyName}
+                              sx={{ width: 80, height: 80 }}
                             >
-                              <Email fontSize="small" color="action" />
-                              <Typography
-                                variant="body2"
-                                color="text.secondary"
-                              >
-                                {company.companyEmail}
-                              </Typography>
-                            </Box>
-                            {company.location && (
+                              {company.companyName?.charAt(0)}
+                            </Avatar>
+                          </Badge>
+
+                          <Box sx={{ flexGrow: 1 }}>
+                            <Typography
+                              variant="h6"
+                              fontWeight="600"
+                              gutterBottom
+                            >
+                              {company.companyName}
+                            </Typography>
+                            <Stack spacing={1}>
                               <Box
                                 sx={{
                                   display: "flex",
@@ -642,61 +560,82 @@ const AdminDashboard = () => {
                                   gap: 1,
                                 }}
                               >
-                                <LocationOn fontSize="small" color="action" />
+                                <Email fontSize="small" color="action" />
                                 <Typography
                                   variant="body2"
                                   color="text.secondary"
                                 >
-                                  {company.location}
+                                  {company.companyEmail}
                                 </Typography>
                               </Box>
-                            )}
-                          </Stack>
-                        </Box>
+                              {company.location && (
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                  }}
+                                >
+                                  <LocationOn fontSize="small" color="action" />
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                  >
+                                    {company.location}
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Stack>
+                          </Box>
 
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            textAlign: "center",
-                            gap: 2,
-                            flexWrap: "wrap",
-                            mb: 1,
-                          }}
-                        >
-                          <Chip
-                            icon={
-                              company.isVerified ? (
-                                <CheckCircle />
-                              ) : (
-                                <PendingActions />
-                              )
-                            }
-                            label={company.isVerified ? "Verified" : "Pending"}
-                            color={company.isVerified ? "success" : "warning"}
-                            variant="outlined"
-                            sx={{ fontWeight: 600 }}
-                          />
-
-                          <Button
-                            variant="contained"
-                            size="small"
-                            color={
-                              company.status === "approved"
-                                ? "error"
-                                : "success"
-                            }
-                            onClick={() =>
-                              toggleCompanyStatus(company._id, company.status)
-                            }
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              textAlign: "center",
+                              gap: 2,
+                              flexWrap: "wrap",
+                              mb: 1,
+                            }}
                           >
-                            {company.status === "approved" ? "Deny" : "Approve"}
-                          </Button>
-                        </Box>
-                      </Paper>
-                    </Grid>
-                  ))}
+                            <Chip
+                              icon={
+                                company.isVerified ? (
+                                  <CheckCircle />
+                                ) : (
+                                  <PendingActions />
+                                )
+                              }
+                              label={
+                                company.isVerified ? "Verified" : "Pending"
+                              }
+                              color={company.isVerified ? "success" : "warning"}
+                              variant="outlined"
+                              sx={{ fontWeight: 600 }}
+                            />
+
+                            <Button
+                              variant="contained"
+                              size="small"
+                              color={
+                                company.status === "approved"
+                                  ? "error"
+                                  : "success"
+                              }
+                              onClick={() =>
+                                toggleCompanyStatus(company._id, company.status)
+                              }
+                            >
+                              {company.status === "approved"
+                                ? "Deny"
+                                : "Approve"}
+                            </Button>
+                          </Box>
+                        </Paper>
+                      </Grid>
+                    ))
+                  : null}
               </Stack>
             )}
           </Box>

@@ -640,7 +640,6 @@ function FindJob() {
           >
             {paginatedJobs.map((job, idx) => {
               const randomColor = getRandomLightColor(idx);
-
               return (
                 <Box
                   key={job._id}
@@ -691,7 +690,6 @@ function FindJob() {
                           }}
                         >
                           <img
-                            // هذا الكود صحيح وسيعمل بعد إصلاح الخطوة 1
                             src={
                               job.company?.profilepic ||
                               "https://cdn-icons-png.flaticon.com/512/1055/1055687.png"
@@ -702,7 +700,7 @@ function FindJob() {
                               height: "48px",
                               borderRadius: "50%",
                               objectFit: "cover",
-                              marginRight: "12px", // إضافة مسافة لتحسين الشكل
+                              marginRight: "12px",
                             }}
                           />
                         </Box>

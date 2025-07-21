@@ -6,7 +6,7 @@ import { registerValidator } from "../../middleware/registervalidate.js";
 import validaterror from "../../middleware/validationresult.js";
 import checkRole from "../../middleware/checkRole.js";
 import photoUpload from "../../middleware/photoUpload.js";
-import multer from 'multer';
+import multer from "multer";
 
 const router = express.Router();
 
@@ -98,34 +98,29 @@ router.route("/getphoto").get(auth, handlers.getphoto);
 
 router.route("/changePassword").post(auth, handlers.changePassword);
 
-router.route("/getallusers")
-  .get(handlers.getAllUsers)
+router.route("/getallusers").get(handlers.getAllUsers);
 //.get(auth, checkRole("admin"), handlers.getallusers) // to be handled later
 
-
-
-router.route("/toggleUserStatus/:id")
-  .patch(handlers.toggleUserStatus);
+router.route("/toggleUserStatus/:id").patch(handlers.toggleUserStatus);
 // .patch(auth, checkRole("admin"), handlers.toggleUserStatus); // to be handled later
-
-
-
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-router.route("/uploadCv").post(upload.single('cv'), handlers.uploadCv);
+router.route("/uploadCv").post(upload.single("cv"), handlers.uploadCv);
 
+router.route("/viewJobApplications").get(auth, handlers.viewJobApplications);
 
-router.route("/viewJobApplications")
-  .get(auth, handlers.viewJobApplications);
-
-router.route("/viewTrainingApplications")
+router
+  .route("/viewTrainingApplications")
   .get(auth, handlers.viewTrainingApplications);
 
-router.route("/viewCourseApplications")
+router
+  .route("/viewCourseApplications")
   .get(auth, handlers.viewCourseApplications);
 
-router.route("/:id")
-  .get(handlers.getUserById);  
+router.route("/:id").get(handlers.getUserById);
 // .get(auth, checkRole("admin"), handlers.getUserById); // to be handled later
+
+
+
 export default router;

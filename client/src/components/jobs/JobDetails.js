@@ -64,7 +64,7 @@ function JobDetails() {
       }, 2000);
     }
   };
-    const userRole = localStorage.getItem("role");
+  const userRole = localStorage.getItem("role");
 
   useEffect(() => {
     const fetchJob = async () => {
@@ -228,16 +228,25 @@ function JobDetails() {
                 mb: 4,
               }}
             >
-              <Box sx={{ mr: 1 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  mb: 1.2,
+                }}
+              >
                 <img
-                  src="https://cdn-icons-png.flaticon.com/512/1055/1055687.png"
-                  alt="Company Logo"
+                  src={
+                    job.company?.profilepic ||
+                    "https://cdn-icons-png.flaticon.com/512/1055/1055687.png"
+                  }
+                  alt={job.company?.companyName || "Company Logo"}
                   style={{
-                    width: "70px",
-                    height: "70px",
+                    width: "58px",
+                    height: "58px",
                     borderRadius: "50%",
                     objectFit: "cover",
-                    fontFamily: "Geist",
+                    marginRight: "12px",
                   }}
                 />
               </Box>
@@ -254,9 +263,11 @@ function JobDetails() {
                 >
                   {job.jobTitle
                     ? job.jobTitle
-                      .split(" ")
-                      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                      .join(" ")
+                        .split(" ")
+                        .map(
+                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                        )
+                        .join(" ")
                     : ""}
                 </Typography>
 
@@ -465,41 +476,42 @@ function JobDetails() {
 
         {/* Apply Button */}
         {userRole === "user" && (
-        <Card
-          sx={{
-            bgcolor: "#ffffff",
-            border: "1px solid #e0e0e0",
-            borderRadius: 2,
-            position: "sticky",
-            bottom: 20,
-            zIndex: 10,
-          }}
-          elevation={3}
-        >
-          <Box sx={{ p: 3 }}>
-            <Button
-              variant="contained"
-              fullWidth
-              onClick={handleApply}
-              sx={{
-                bgcolor: "#000000",
-                color: "#ffffff",
-                borderRadius: 2,
-                fontWeight: 600,
-                fontSize: "1.1rem",
-                py: 1.5,
-                textTransform: "none",
-                "&:hover": {
-                  bgcolor: "#333333",
-                  transform: "translateY(-1px)",
-                },
-                transition: "all 0.2s ease",
-              }}
-            >
-              Apply for this Position
-            </Button>
-          </Box>
-        </Card>)}
+          <Card
+            sx={{
+              bgcolor: "#ffffff",
+              border: "1px solid #e0e0e0",
+              borderRadius: 2,
+              position: "sticky",
+              bottom: 20,
+              zIndex: 10,
+            }}
+            elevation={3}
+          >
+            <Box sx={{ p: 3 }}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleApply}
+                sx={{
+                  bgcolor: "#000000",
+                  color: "#ffffff",
+                  borderRadius: 2,
+                  fontWeight: 600,
+                  fontSize: "1.1rem",
+                  py: 1.5,
+                  textTransform: "none",
+                  "&:hover": {
+                    bgcolor: "#333333",
+                    transform: "translateY(-1px)",
+                  },
+                  transition: "all 0.2s ease",
+                }}
+              >
+                Apply for this Position
+              </Button>
+            </Box>
+          </Card>
+        )}
 
         <Snackbar
           open={snackbar.open}
