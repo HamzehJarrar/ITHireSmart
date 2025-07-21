@@ -74,7 +74,7 @@ export async function coursesearchbyid(req, res) {
   try {
     const course = await Course.findById(req.params.courseId)
       .sort({ _id: -1 })
-      .populate("user", "profilepic firstName lastName");
+      .populate("company", "profilepic firstName lastName");
     if (!course) {
       return res.status(404).json({ msg: "Course not found" });
     }

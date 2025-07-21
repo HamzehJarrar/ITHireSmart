@@ -8,14 +8,17 @@ export async function postTraing(req, res) {
     return res.status(400).json({ errors: errors.array() });
   }
   const companyId = req.user.id;
+  const companyProfile = await Company.findById(companyId);
+  if (!companyProfile) {
+    return res.status(404).json({ msg: "Company profile not found." });
+  }
 
   try {
     const training = new Training({
       user: req.user.id,
       trainingTitle: req.body.trainingTitle,
       company: companyId,
-
-      companyName: req.body.companyName,
+      companyName: companyProfile.companyName,
       location: req.body.location,
       startAt: req.body.startAt,
       endAt: req.body.endAt,
@@ -47,7 +50,7 @@ export async function getalltrain(req, res) {
 
     const trainings = await Training.find({ isHidden: false })
       .sort({ createdAt: -1 })
-      .populate("user", "profilepic firstName lastName");
+      .populate("company", "profilepic firstName lastName");
 
     res.json(trainings);
   } catch (error) {
