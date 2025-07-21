@@ -133,6 +133,18 @@ export async function enrollInTraining(req, res) {
 
     if (training.enrolledUsers.includes(req.user.id)) {
       return res.status(400).json({ msg: "You are already enrolled" });
+    } else if (training.acceptedParticipants.includes(req.user.id)) {
+      return res
+        .status(400)
+        .json({ msg: "You are already accepted as participant" });
+    } else if (training.rejectedParticipants.includes(req.user.id)) {
+      return res
+        .status(400)
+        .json({ msg: "You have been rejected from this training" });
+    } else if (training.pendingParticipants.includes(req.user.id)) {
+      return res
+        .status(400)
+        .json({ msg: "Your participation is still pending approval" });
     }
 
     training.enrolledUsers.push(req.user.id);

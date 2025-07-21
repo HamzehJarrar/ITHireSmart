@@ -148,6 +148,14 @@ export const enrollCourse = async (req, res) => {
 
     if (course.students.includes(userId)) {
       return res.status(400).json({ message: "User already enrolled" });
+    } else if (course.acceptedStudents.includes(userId)) {
+      return res
+        .status(400)
+        .json({ message: "User already accepted in this course" });
+    } else if (course.rejectedStudents.includes(userId)) {
+      return res
+        .status(400)
+        .json({ message: "User was rejected from this course" });
     }
 
     course.students.push(userId);

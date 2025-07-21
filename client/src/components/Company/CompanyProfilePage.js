@@ -159,7 +159,6 @@ function CompanyPublicProfile() {
         setError(null);
         const res = await getCompanyProfile(companyId);
         setCompany(res.data);
-        console.log("Company data:", res.data);
       } catch (err) {
         setError(
           err.response?.data?.msg || "Failed to load company information."
@@ -210,9 +209,7 @@ function CompanyPublicProfile() {
             }}
           >
             <Avatar
-              src={
-                company?.profilepic
-              }
+              src={company?.profilepic}
               alt={company?.companyName || "Company"}
               sx={{
                 width: 120,

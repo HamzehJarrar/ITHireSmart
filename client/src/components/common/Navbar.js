@@ -142,38 +142,45 @@ const Navbar = () => {
       try {
         const userId = localStorage.getItem("userId");
         const role = localStorage.getItem("role");
+        const companyId = localStorage.getItem("companyId");
 
-        if (!userId || !role) {
-          throw new Error("Missing user ID or role.");
+        if (!userId && !companyId) {
+          console.log("No user or company logged in.");
+          return;
         }
 
         let profile;
-        if (role === "company") {
-          const response = await getCompanyProfile(userId);
+        if (role === "company" && companyId) {
+          const response = await getCompanyProfile(companyId);
           profile = response.data;
           setUser({
             ...profile,
-            profilepic: profile?.companyLogo?.url || profile?.companyLogo || "",
+            profilepic: profile.profilepic || "",
           });
-        } else {
+        } else if (role === "user" && userId) {
           const response = await getMyProfile();
-          profile = response.data;
-          setUser({
+          const profile = response.data;
+
+          const userData = {
             ...profile.user,
             location: profile.location,
             experience: profile.experience,
             education: profile.education,
             skills: profile.skills,
-            profilepic: profile.user.profilepic,
-          });
+            profilepic: profile.user.profilepic?.url || "",
+          };
+
+          setUser(userData);
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
+        localStorage.clear();
+        setUser(null);
       }
     };
 
     fetchProfile();
-  }, []);
+  }, [setUser]);
 
   const renderLinks = () =>
     navItems.map((item, i) => (
@@ -258,7 +265,7 @@ const Navbar = () => {
                   sx={{ p: 0.5 }}
                 >
                   <Avatar
-                    src={user?.profilepic?.url || "/default-avatar.png"}
+                    src={user?.profilepic}
                     sx={{
                       width: 50,
                       height: 50,
