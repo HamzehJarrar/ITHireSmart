@@ -352,7 +352,7 @@ export const getRecommendedCourses = async (req, res) => {
 
     const allCourses = await Course.find().populate("user");
 
-    const prompt = `You are an expert in machine learning and educational recommendation systems. I need your expertise to analyze the user's profile and recommend the most suitable training courses.
+    const prompt = `You are an expert in machine learning and educational recommendation systems. I need your expertise to analyze the user's profile and recommend the most suitable training courses and be strict with the matchimg score.
 
 Please follow the structured steps below to generate accurate and personalized course recommendations:
 
