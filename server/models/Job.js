@@ -80,6 +80,15 @@ const jobSchema = new mongoose.Schema(
         rank: Number,
       },
     ],
+    acceptedParticipants: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    ],
+    rejectedParticipants: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    ],
+    pendingParticipants: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    ],
   },
   { timestamps: true }
 );
