@@ -36,6 +36,8 @@ router.patch("/:id/hide", auth, checkRole("company"), handlers.hidejob);
 // @access  Private (company only)
 router.patch("/:id/unhide", auth, checkRole("company"), handlers.unhidejob);
 
+
+
 // ====================================================================
 // Job Viewing and Search Routes
 // ====================================================================
@@ -84,6 +86,20 @@ router.get(
   checkRole("company"),
   handlers.viewApplicants
 );
+
+router.route("/:jobId/applicants/accepted")
+  .get(auth, checkRole("company"), handlers.viewAcceptedApplicants);
+
+// @route   GET /api/jobs/:jobId/applicants/rejected
+// @desc    Get all rejected applicants for a specific job
+  router.route("/:jobId/applicants/rejected")
+  .get(auth, checkRole("company"), handlers.viewRejectedApplicants);
+
+router.route("/:jobId/applicants/accept")
+  .patch(auth, checkRole("company"), handlers.setJobaccepted);
+
+router.route("/:jobId/applicants/reject")
+  .patch(auth, checkRole("company"), handlers.setJobRejected);
 
 // @route   GET /api/jobs/:jobId/recommendations
 // @desc    Get recommended applicants for a specific job
