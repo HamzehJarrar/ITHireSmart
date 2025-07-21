@@ -1,8 +1,8 @@
-import Company from "../../models/Company.js";
-import bcrypt from "bcrypt";
-import crypto from "crypto";
-import jwt from "jsonwebtoken";
-import config from "config";
+import Company from "../../models/Company.js"; // Your Mongoose model for companies
+import bcrypt from "bcrypt";                   // For hashing passwords
+import crypto from "crypto";                   // For generating secure random tokens
+import jwt from "jsonwebtoken";                // For creating JWT tokens
+import config from "config";                   // For managing configuration variables
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,
@@ -10,7 +10,7 @@ import {
 } from "../../nodemailer/sendEmail.js";
 import { validationResult } from "express-validator";
 
-import fs from "fs";
+import fs from "fs"; // Node.js built-in module for working with the file system (reading, writing, deleting files).
 import { cloudinaryUpload } from "../../utils/cloudinary.js";
 
 export async function companyRegister(req, res) {
