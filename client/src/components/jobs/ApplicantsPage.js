@@ -18,8 +18,11 @@ import {
   List,
   ListItem,
   ListItemText,
+  TextField,
+  InputAdornment,
+  Stack,
 } from "@mui/material";
-import { Mail } from "@mui/icons-material";
+import { Mail, Search } from "@mui/icons-material";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 
@@ -31,6 +34,7 @@ const ApplicantsPage = () => {
   const [loading, setLoading] = useState(true);
   const [recommended, setRecommended] = useState([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [search, setSearch] = useState("");
 
   const navigate = useNavigate();
 
@@ -39,7 +43,6 @@ const ApplicantsPage = () => {
     if (savedRecommended) {
       try {
         setRecommended(JSON.parse(savedRecommended));
-
       } catch {
         localStorage.removeItem("recommendedApplicants");
       }
@@ -93,6 +96,22 @@ const ApplicantsPage = () => {
     setDrawerOpen(false);
   };
 
+  const filteredApplicants = applicants.filter((applicant) => {
+    const user = applicant.user || {};
+    const fullName =
+      (user.firstName ? user.firstName : "") +
+      " " +
+      (user.lastName ? user.lastName : "");
+    const email = user.email || "";
+
+    const searchLower = search.toLowerCase();
+
+    return (
+      fullName.toLowerCase().includes(searchLower) ||
+      email.toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
     <Box sx={{ display: "flex" }}>
       <Container
@@ -130,60 +149,86 @@ const ApplicantsPage = () => {
             alignItems: "center",
           }}
         >
-          <Button
-            variant="contained"
-            size="medium"
-            startIcon={<ArrowBackIosNewIcon />}
-            sx={{
-              bgcolor: "black",
-              textTransform: "none",
-              borderRadius: 2,
-              boxShadow: 2,
-              px: 3,
-              color: "white",
-            }}
-            onClick={() => navigate(-1)}
-          >
-            Back
-          </Button>
+          <Box sx={{ mb: 3 }}>
+            <Stack
+              direction="row"
+              spacing={2}
+              alignItems="center"
+              flexWrap="wrap"
+              mb={2}
+            >
+              <Button
+                variant="contained"
+                size="medium"
+                startIcon={<ArrowBackIosNewIcon />}
+                sx={{
+                  bgcolor: "black",
+                  textTransform: "none",
+                  borderRadius: 2,
+                  boxShadow: 2,
+                  px: 3,
+                  color: "white",
+                }}
+                onClick={() => navigate(-1)}
+              >
+                Back
+              </Button>
 
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-            }}
-            onClick={fetchRecommendations}
-          >
-            AI Recommend Top 5
-          </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                }}
+                onClick={fetchRecommendations}
+              >
+                AI Recommend Top 5
+              </Button>
 
-          <Button
-            variant="outlined"
-            color="secondary"
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-            }}
-            onClick={loadSavedRecommendations}
-          >
-            Show Saved Recommendations
-          </Button>
+              <Button
+                variant="outlined"
+                color="secondary"
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                }}
+                onClick={loadSavedRecommendations}
+              >
+                Show Saved Recommendations
+              </Button>
 
-          <Button
-            variant="outlined"
-            color="error"
-            sx={{
-              borderRadius: 2,
-              textTransform: "none",
-            }}
-            onClick={clearSavedRecommendations}
-          >
-            Clear Saved Recommendations
-          </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                sx={{
+                  borderRadius: 2,
+                  textTransform: "none",
+                }}
+                onClick={clearSavedRecommendations}
+              >
+                Clear Saved Recommendations
+              </Button>
+            </Stack>
+
+            <TextField
+              fullWidth
+              label="Search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search color="action" />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                bgcolor: "white",
+              }}
+            />
+          </Box>
         </Box>
-
         {loading ? (
           <Box
             sx={{
@@ -195,7 +240,7 @@ const ApplicantsPage = () => {
           >
             <CircularProgress />
           </Box>
-        ) : applicants.length === 0 ? (
+        ) : filteredApplicants.length === 0 ? (
           <Card
             sx={{
               p: 4,
@@ -205,16 +250,15 @@ const ApplicantsPage = () => {
             }}
           >
             <Typography variant="h6" color="text.secondary">
-              No applicants found for this position yet.
+              No applicants match your search.
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Check back later or modify your job posting to attract more
-              candidates.
+              Try a different keyword.
             </Typography>
           </Card>
         ) : (
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2 }}>
-            {applicants.map((applicant) => {
+            {filteredApplicants.map((applicant) => {
               const user = applicant.user;
               const name =
                 user?.firstName && user?.lastName
@@ -321,29 +365,33 @@ const ApplicantsPage = () => {
         {recommended.length === 0 ? (
           <Typography>No recommendations found.</Typography>
         ) : (
-<List>
-  {recommended.map((rec, index) => (
-    <ListItem key={index} alignItems="flex-start" divider>
-      <ListItemText
-        primary={
-          <>
-            <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-              {rec.name || "Unknown"} — Match Score: {rec.match_score ?? "N/A"}%
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {rec.Email || "No email provided"}
-            </Typography>
-          </>
-        }
-        secondary={
-          <Typography variant="body2" sx={{ mt: 1 }}>
-            {rec.justification || ""}
-          </Typography>
-        }
-      />
-    </ListItem>
-  ))}
-</List>
+          <List>
+            {recommended.map((rec, index) => (
+              <ListItem key={index} alignItems="flex-start" divider>
+                <ListItemText
+                  primary={
+                    <>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: "bold" }}
+                      >
+                        {rec.name || "Unknown"} — Match Score:{" "}
+                        {rec.match_score ?? "N/A"}%
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {rec.Email || "No email provided"}
+                      </Typography>
+                    </>
+                  }
+                  secondary={
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      {rec.justification || ""}
+                    </Typography>
+                  }
+                />
+              </ListItem>
+            ))}
+          </List>
         )}
       </Drawer>
     </Box>
