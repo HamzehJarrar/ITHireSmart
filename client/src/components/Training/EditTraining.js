@@ -214,7 +214,8 @@ const EditTraining = () => {
               onChange={handleChange}
               fullWidth
               multiline
-              rows={4}
+              minRows={3}
+              maxRows={10}
               margin="normal"
             />
 
@@ -225,7 +226,8 @@ const EditTraining = () => {
               onChange={handleTopicsChange}
               fullWidth
               multiline
-              rows={3}
+              minRows={3}
+              maxRows={10}
               margin="normal"
             />
 
@@ -236,7 +238,8 @@ const EditTraining = () => {
               onChange={handleRequirementsChange}
               fullWidth
               multiline
-              rows={3}
+              minRows={3}
+              maxRows={10}
               margin="normal"
             />
 

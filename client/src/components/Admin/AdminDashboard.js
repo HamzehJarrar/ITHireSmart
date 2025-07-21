@@ -39,6 +39,8 @@ import {
 } from "@mui/icons-material";
 import { getAllUsers, toggleUserStatus } from "../../API/adminAPI";
 import { getAllCompanies, verifyCompany } from "../../API/company";
+import NewspaperIcon from "@mui/icons-material/Newspaper";
+import { useNavigate } from "react-router-dom";
 
 const AdminDashboard = () => {
   const theme = useTheme();
@@ -49,6 +51,8 @@ const AdminDashboard = () => {
   const [userFilter, setUserFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -100,7 +104,6 @@ const AdminDashboard = () => {
       );
     });
 
-  // Filter companies by isVerified (keep as is)
   const filteredCompanies = companies.filter((company) => {
     if (companyFilter === "verified" && !company.isVerified) return false;
     if (companyFilter === "unverified" && company.isVerified) return false;
@@ -111,7 +114,6 @@ const AdminDashboard = () => {
     );
   });
 
-  // Stats
   const getStats = () => {
     const verifiedUsers = users.filter((user) => user.role !== "none").length;
     const verifiedCompanies = companies.filter(
@@ -125,7 +127,6 @@ const AdminDashboard = () => {
     };
   };
 
-  // Toggle user role (enable/disable user)
   const toggleUserRole = async (userId) => {
     try {
       const res = await toggleUserStatus(userId);
@@ -141,7 +142,6 @@ const AdminDashboard = () => {
     }
   };
 
-  // Toggle company status (approved/denied)
   const toggleCompanyStatus = async (companyId, currentStatus) => {
     try {
       const newStatus = currentStatus === "approved" ? "denied" : "approved";
@@ -179,7 +179,6 @@ const AdminDashboard = () => {
   return (
     <Box sx={{ bgcolor: "grey.50", minHeight: "100vh" }}>
       <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* Header */}
         <Box sx={{ mb: 4 }}>
           <Typography
             variant="h4"
@@ -204,7 +203,6 @@ const AdminDashboard = () => {
 
         {role === "admin" && (
           <>
-            {/* Stats Cards */}
             <Grid container spacing={3} sx={{ mb: 4 }}>
               <Grid item xs={12} sm={6} md={3}>
                 <Card
@@ -237,15 +235,11 @@ const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               </Grid>
-              {/* باقي الـ Cards مثل اللي فوق */}
-              {/* ... */}
             </Grid>
           </>
         )}
 
-        {/* Main Content Card */}
         <Card sx={{ overflow: "hidden" }}>
-          {/* Tabs */}
           <Box
             sx={{ borderBottom: 1, borderColor: "divider", bgcolor: "grey.50" }}
           >
@@ -279,7 +273,6 @@ const AdminDashboard = () => {
             </Tabs>
           </Box>
 
-          {/* Filters */}
           <Box sx={{ p: 3, bgcolor: "grey.25" }}>
             <Grid container spacing={3} alignItems="center">
               <Grid item xs={12} md={6}>
@@ -329,7 +322,6 @@ const AdminDashboard = () => {
 
           <Divider />
 
-          {/* Content */}
           <Box sx={{ p: 3 }}>
             {currentData.length === 0 ? (
               <Box sx={{ textAlign: "center", py: 8 }}>
@@ -453,27 +445,28 @@ const AdminDashboard = () => {
                           </Stack>
                         </Box>
 
-                        {role === "admin" ? (
-                          <Box sx={{ textAlign: "center" }}>
-                            <Chip
-                              icon={
-                                user.role !== "none" ? (
-                                  <CheckCircle />
-                                ) : (
-                                  <PendingActions />
-                                )
-                              }
-                              label={
-                                user.role !== "none" ? "Enabled" : "Disabled"
-                              }
-                              color={
-                                user.role !== "none" ? "success" : "warning"
-                              }
-                              variant="outlined"
-                              sx={{ fontWeight: 600, mr: 1 }}
-                            />
-
-                            {role == "admin" ? (
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          {role === "admin" && (
+                            <>
+                              <Chip
+                                icon={
+                                  user.role !== "none" ? (
+                                    <CheckCircle />
+                                  ) : (
+                                    <PendingActions />
+                                  )
+                                }
+                                label={
+                                  user.role !== "none" ? "Enabled" : "Disabled"
+                                }
+                                color={
+                                  user.role !== "none" ? "success" : "warning"
+                                }
+                                variant="outlined"
+                                sx={{ fontWeight: 600 }}
+                              />
                               <Button
                                 variant="contained"
                                 size="small"
@@ -484,9 +477,18 @@ const AdminDashboard = () => {
                               >
                                 {user.role !== "none" ? "Disable" : "Enable"}
                               </Button>
-                            ) : null}
-                          </Box>
-                        ) : null}
+                            </>
+                          )}
+                        </Box>
+                        <Chip
+                          size="small"
+                          label="Information"
+                          icon={<NewspaperIcon fontSize="small" />}
+                          variant="outlined"
+                          clickable
+                          sx={{ p: 1 }}
+                          onClick={() => navigate(`/user/${user._id}`)}
+                        />
                       </Paper>
                     </Grid>
                   ))}
