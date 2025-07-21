@@ -87,6 +87,7 @@ router.get(
   handlers.viewApplicants
 );
 
+
 router.route("/:jobId/applicants/accepted")
   .get(auth, checkRole("company"), handlers.viewAcceptedApplicants);
 

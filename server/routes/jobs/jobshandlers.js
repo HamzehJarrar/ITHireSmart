@@ -157,13 +157,21 @@ export async function jobapply(req, res) {
       return res
         .status(400)
         .json({ msg: "You have already applied to this job" });
+    } else if (job.acceptedParticipants.includes(req.user.id)) {
+      return res
+        .status(400)
+        .json({ msg: "You have already been accepted for this job" });
+    } else if (job.rejectedParticipants.includes(req.user.id)) {
+      return res
+        .status(400)
+        .json({ msg: "You have been rejected for this job" });
     }
 
     job.applicants.push({
       user: req.user.id,
       appliedAt: new Date(),
     });
-  
+
     await job.save();
     res.json({ msg: "Application submitted successfully" });
   } catch (error) {
@@ -362,22 +370,56 @@ Rely on your deep understanding of competency analysis and qualification assessm
 
 export async function setJobaccepted(req, res) {
   try {
+    const { applicantId } = req.body;
+
     const job = await Job.findById(req.params.jobId);
     if (!job) {
       return res.status(404).json({ msg: "Job not found" });
     }
 
-    if (job.acceptedParticipants.includes(req.user.id)) {
-      return res.status(400).json({ msg: "You have already accepted this candidate" });
+    if (job.acceptedParticipants.includes(applicantId)) {
+      return res
+        .status(400)
+        .json({ msg: "This candidate is already accepted" });
     }
 
-    job.acceptedParticipants.push(req.user.id);
+    job.acceptedParticipants.push(applicantId);
 
     job.applicants = job.applicants.filter(
-      (applicant) => applicant.user.toString() !== req.user.id
+      (applicant) => applicant.user.toString() !== applicantId
     );
+
     await job.save();
     res.json({ msg: "Candidate accepted successfully" });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send(error.message);
+  }
+}
+
+export async function setJobRejected(req, res) {
+  try {
+    const { applicantId } = req.body;
+
+    const job = await Job.findById(req.params.jobId);
+    if (!job) {
+      return res.status(404).json({ msg: "Job not found" });
+    }
+
+    if (job.rejectedParticipants.includes(applicantId)) {
+      return res
+        .status(400)
+        .json({ msg: "This candidate is already rejected" });
+    }
+
+    job.rejectedParticipants.push(applicantId);
+
+    job.applicants = job.applicants.filter(
+      (applicant) => applicant.user.toString() !== applicantId
+    );
+
+    await job.save();
+    res.json({ msg: "Candidate rejected successfully" });
   } catch (error) {
     console.error(error.message);
     res.status(500).send(error.message);
@@ -396,29 +438,6 @@ export async function viewAcceptedApplicants(req, res) {
     }
 
     res.json(job.acceptedParticipants);
-  } catch (error) {
-    console.error(error.message);
-    res.status(500).send(error.message);
-  }
-}
-
-export async function setJobRejected(req, res) {
-  try {
-    const job = await Job.findById(req.params.jobId);
-    if (!job) {
-      return res.status(404).json({ msg: "Job not found" });
-    }
-
-    if (job.rejectedParticipants.includes(req.user.id)) {
-      return res.status(400).json({ msg: "You have already rejected this candidate" });
-    }
-
-    job.rejectedParticipants.push(req.user.id);
-    job.applicants = job.applicants.filter(
-      (applicant) => applicant.user.toString() !== req.user.id
-    );
-    await job.save();
-    res.json({ msg: "candidate rejected successfully" });
   } catch (error) {
     console.error(error.message);
     res.status(500).send(error.message);

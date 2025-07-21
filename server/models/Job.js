@@ -86,9 +86,7 @@ const jobSchema = new mongoose.Schema(
     rejectedParticipants: [
       { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     ],
-    pendingParticipants: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    ],
+    
   },
   { timestamps: true }
 );
