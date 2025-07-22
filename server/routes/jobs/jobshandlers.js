@@ -421,15 +421,12 @@ export async function setJobRejected(req, res) {
         .json({ msg: "This candidate is already rejected" });
     }
 
-    // إزالة من المقبولين
     job.acceptedParticipants = job.acceptedParticipants.filter(
       (id) => id.toString() !== applicantId
     );
 
-    // إضافة إلى المرفوضين
     job.rejectedParticipants.push(applicantId);
 
-    // إزالة من قائمة applicants بطريقة آمنة
     job.applicants = job.applicants.filter(
       (applicant) => applicant?.user?.toString() !== applicantId
     );
@@ -487,7 +484,6 @@ export async function setJobPending(req, res) {
       return res.status(404).json({ msg: "Job not found" });
     }
 
-    // تحقق إذا المستخدم موجود مسبقًا ضمن الـ pending (applicants)
     const isAlreadyPending = job.applicants.some((applicant) => {
       if (!applicant) return false;
 
@@ -495,7 +491,6 @@ export async function setJobPending(req, res) {
         return applicant.user.toString() === applicantId;
       }
 
-      // احتمال يكون applicant مباشرة ID
       return applicant.toString?.() === applicantId;
     });
 
@@ -503,7 +498,6 @@ export async function setJobPending(req, res) {
       return res.status(400).json({ msg: "This candidate is already pending" });
     }
 
-    // إزالة من المقبولين والمرفوضين
     job.acceptedParticipants = job.acceptedParticipants.filter(
       (id) => id.toString() !== applicantId
     );
@@ -511,7 +505,6 @@ export async function setJobPending(req, res) {
       (id) => id.toString() !== applicantId
     );
 
-    // إضافة إلى قائمة pending (applicants)
     job.applicants.push({ user: applicantId });
 
     await job.save();
