@@ -104,10 +104,10 @@ const PostJob = () => {
               navigate("/FindJob");
             }, 1500);
           } catch (error) {
-            console.error("Validation error:", error.response?.data); // 👈 ضروري نطبع التفاصيل
+            console.error("Validation error:", error.response?.data);
             const errors = error.response?.data?.errors;
             if (errors && errors.length > 0) {
-              console.log("Validation message:", errors[0].msg); // 👈 نطبع أول رسالة خطأ
+              console.log("Validation message:", errors[0].msg);
             }
 
             setSnackbarMessage(
@@ -181,7 +181,7 @@ const PostJob = () => {
             <TextField
               label="Company"
               name="company"
-              value={values.company }
+              value={values.company}
               onChange={handleChange}
               onBlur={handleBlur}
               error={touched.company && Boolean(errors.company)}
@@ -203,6 +203,7 @@ const PostJob = () => {
             />
             <TextField
               fullWidth
+              label="From"
               type="date"
               name="from"
               value={values.from}
@@ -217,6 +218,7 @@ const PostJob = () => {
             />
             <TextField
               fullWidth
+              label="to"
               type="date"
               name="to"
               value={values.to}

@@ -59,9 +59,13 @@ export async function getallcourses(req, res) {
       { $set: { isHidden: true } }
     );
 
-    const courses = await Course.find({ isHidden: false })
-      .sort({ _id: -1 })
-      .populate("company");
+    const courses = await Course.find({
+      isHidden: false,
+      startAt: { $lte: today },
+    })
+      .sort({ startAt: -1 })
+      .populate("company", "companyName profilepic")
+      .populate("user", "firstName lastName");
 
     res.json(courses);
   } catch (err) {

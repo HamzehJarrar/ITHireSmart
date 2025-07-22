@@ -485,6 +485,7 @@ const ApplicantsPage = () => {
                     <>
                       {rec.name || "Unknown"} — Score:{" "}
                       {rec.match_score ?? "N/A"}%
+                      {rec.Email && ` (${rec.Email})`}
                     </>
                   }
                   secondary={<>{rec.justification || ""}</>}
