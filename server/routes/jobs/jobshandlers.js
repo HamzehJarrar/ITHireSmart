@@ -421,15 +421,12 @@ export async function setJobRejected(req, res) {
         .json({ msg: "This candidate is already rejected" });
     }
 
-    // إزالة من المقبولين
     job.acceptedParticipants = job.acceptedParticipants.filter(
       (id) => id.toString() !== applicantId
     );
 
-    // إضافة إلى المرفوضين
     job.rejectedParticipants.push(applicantId);
 
-    // إزالة من قائمة applicants بطريقة آمنة
     job.applicants = job.applicants.filter(
       (applicant) => applicant?.user?.toString() !== applicantId
     );
