@@ -23,7 +23,7 @@ router.get("/profile/:companyId", handlers.getCompanyProfile);
 router.get("/verify-email", handlers.verifyCompanyEmail);
 
 // PUT - Approve or Deny company by admin
-router.put("/verify/:id", auth, checkRole("admin"), handlers.verifyCompany);
+router.put("/verify/:id", auth , handlers.verifyCompany);
 
 // GET - All Companies
 router.get("/",  handlers.getAllCompanies);

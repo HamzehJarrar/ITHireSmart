@@ -173,6 +173,11 @@ function App() {
 
           <Route element={<ProtectedRoute allowedRole="admin" />}>
             <Route path="/AdminDashboard" element={<AdminDashboard />} />
+
+            <Route
+              path="/companyprofilepage:companyId"
+              element={<CompanyProfilePage />}
+            />
           </Route>
 
           {/* 404 Not Found */}

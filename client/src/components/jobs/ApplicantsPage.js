@@ -62,9 +62,6 @@ const ApplicantsPage = () => {
       setApplicants(pendingRes.data || []);
       setAcceptedApplicants(acceptedRes.data || []);
       setRejectedApplicants(rejectedRes.data || []);
-      console.log("Applicants data fetched:", pendingRes.data);
-      console.log("Accepted Applicants data fetched:", acceptedRes.data);
-      console.log("Rejected Applicants data fetched:", rejectedRes.data);
     } catch (error) {
       console.log("Failed to fetch applicants data:", error);
     } finally {
@@ -321,7 +318,7 @@ const ApplicantsPage = () => {
             </Button>
             <Button
               variant="contained"
-              onClick={() => handleAccept(user._id)}
+              onClick={() => handlePending(user._id)}
               sx={{
                 flex: 1,
                 backgroundColor: orange[500],

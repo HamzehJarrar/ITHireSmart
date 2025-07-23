@@ -25,6 +25,10 @@ import {
   CircularProgress,
   IconButton,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   Cancel,
@@ -41,6 +45,10 @@ import { getAllUsers, toggleUserStatus } from "../../API/adminAPI";
 import { getAllCompanies, verifyCompany } from "../../API/company";
 import NewspaperIcon from "@mui/icons-material/Newspaper";
 import { useNavigate } from "react-router-dom";
+import { getCompanyProfile } from "../../API/company";
+import BusinessIcon from "@mui/icons-material/Business";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
+import PersonIcon from "@mui/icons-material/Person";
 
 const AdminDashboard = () => {
   const theme = useTheme();
@@ -51,6 +59,8 @@ const AdminDashboard = () => {
   const [userFilter, setUserFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [open, setOpen] = useState(false);
 
   const navigate = useNavigate();
 
@@ -159,6 +169,18 @@ const AdminDashboard = () => {
 
   const stats = getStats();
   const currentData = tab === 0 ? filteredUsers : filteredCompanies;
+
+  const handleViewProfile = async (companyId) => {
+    try {
+      const response = await getCompanyProfile(companyId);
+      const companyData = response.data;
+
+      setSelectedCompany(companyData);
+      setOpen(true);
+    } catch (error) {
+      console.error("Error fetching company profile", error);
+    }
+  };
 
   if (loading) {
     return (
@@ -388,7 +410,16 @@ const AdminDashboard = () => {
                                   />
                                 )
                               }
-                            ></Badge>
+                            >
+                              <Avatar
+                                src={user.profilepic?.url}
+                                alt={user.firstName}
+                                sx={{ width: 80, height: 80 }}
+                              >
+                                {user.firstName?.charAt(0)}
+                                {user.lastName?.charAt(0)}
+                              </Avatar>
+                            </Badge>
                           ) : (
                             <Avatar
                               src={user.profilepic?.url}
@@ -516,10 +547,19 @@ const AdminDashboard = () => {
                               horizontal: "right",
                             }}
                             badgeContent={
-                              company.isVerified ? (
+                              company.status === "approved" ? (
                                 <CheckCircle
                                   sx={{
                                     color: "success.main",
+                                    bgcolor: "white",
+                                    borderRadius: "50%",
+                                    fontSize: 20,
+                                  }}
+                                />
+                              ) : company.status === "pending" ? (
+                                <PendingActions
+                                  sx={{
+                                    color: "warning.main",
                                     bgcolor: "white",
                                     borderRadius: "50%",
                                     fontSize: 20,
@@ -538,7 +578,7 @@ const AdminDashboard = () => {
                             }
                           >
                             <Avatar
-                              src={company.companyProfile?.url}
+                              src={company.profilepic}
                               alt={company.companyName}
                               sx={{ width: 80, height: 80 }}
                             >
@@ -601,18 +641,51 @@ const AdminDashboard = () => {
                               mb: 1,
                             }}
                           >
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={() => handleViewProfile(company._id)}
+                              sx={{
+                                textTransform: "none",
+                                backgroundColor: "#6D28D9",
+                                color: "white",
+                                "&:hover": {
+                                  backgroundColor: "#5B21B6",
+                                },
+                                borderRadius: 2,
+                                px: 2.5,
+                                py: 0.5,
+                                fontWeight: "bold",
+                                fontSize: "0.875rem",
+                              }}
+                            >
+                              Company Profile
+                            </Button>
+
                             <Chip
                               icon={
-                                company.isVerified ? (
+                                company.status === "approved" ? (
                                   <CheckCircle />
-                                ) : (
+                                ) : company.status === "pending" ? (
                                   <PendingActions />
+                                ) : (
+                                  <Cancel />
                                 )
                               }
                               label={
-                                company.isVerified ? "Verified" : "Pending"
+                                company.status === "approved"
+                                  ? "Approved"
+                                  : company.status === "pending"
+                                  ? "Pending"
+                                  : "Denied"
                               }
-                              color={company.isVerified ? "success" : "warning"}
+                              color={
+                                company.status === "approved"
+                                  ? "success"
+                                  : company.status === "pending"
+                                  ? "warning"
+                                  : "error"
+                              }
                               variant="outlined"
                               sx={{ fontWeight: 600 }}
                             />
@@ -642,6 +715,261 @@ const AdminDashboard = () => {
             )}
           </Box>
         </Card>
+
+        <Dialog
+          open={open}
+          onClose={() => setOpen(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogTitle>Company Profile</DialogTitle>
+
+          <DialogContent dividers>
+            {selectedCompany ? (
+              <>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    mb: 1,
+                  }}
+                >
+                  <Avatar
+                    src={selectedCompany.profilepic || "/placeholder.svg"}
+                    alt={selectedCompany.companyName || "Company"}
+                    variant="rounded"
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      mb: 2,
+                      borderRadius: "50%",
+                      border: "2px solid #ccc",
+                      boxShadow: 4,
+                    }}
+                  >
+                    {selectedCompany.companyName?.charAt(0) || "C"}
+                  </Avatar>
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                      }}
+                      gutterBottom
+                    >
+                      {selectedCompany.companyName}
+                    </Typography>
+
+                    <Typography
+                      gutterBottom
+                      variant="body2"
+                      sx={{
+                        bgcolor: "#f0f0f0bc",
+                        p: 1,
+                        borderRadius: "20px",
+                      }}
+                    >
+                      {selectedCompany.companyField}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box
+                  sx={{
+                    border: "1px solid #ccc",
+                    borderRadius: "5px",
+                    p: 2,
+                    mb: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <BusinessIcon color="primary" />
+                    <Typography variant="h6" component="div">
+                      <strong>Company Overview</strong>
+                    </Typography>
+                  </Box>
+
+                  <Typography gutterBottom>
+                    {selectedCompany.companyDescription}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    border: "1px solid #ccc",
+                    borderRadius: "5px",
+                    p: 2,
+                    mb: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <BusinessCenterIcon color="success" />
+                    <Typography variant="h6" component="div">
+                      <strong>Company Details</strong>
+                    </Typography>
+                  </Box>
+                  <Typography gutterBottom>
+                    <strong>Location:</strong> {selectedCompany.location}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    border: "1px solid #ccc",
+                    borderRadius: "5px",
+                    p: 2,
+                    mb: 2,
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      mb: 1,
+                    }}
+                  >
+                    <PersonIcon sx={{ color: "#9333EA" }} />
+                    <Typography variant="h6" component="div">
+                      <strong>Contact Information</strong>
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      textAlign: "center",
+                      gap: 0.5,
+                      bgcolor: "#f0f0f0bc",
+                      p: 1,
+                      borderRadius: "20px",
+                    }}
+                  >
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {selectedCompany.contactName}
+                    </Typography>
+
+                    <Typography variant="body2" color="text.secondary">
+                      {selectedCompany.contactPosition}
+                    </Typography>
+                  </Box>
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      textAlign: "center",
+                      gap: 0.5,
+                    }}
+                  >
+                    <strong>Phone </strong>{" "}
+                    <Typography gutterBottom sx={{ mb: 1 }}>
+                      {selectedCompany.contactPhoneNumber}
+                    </Typography>
+                  </Box>
+
+                  <Divider />
+
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-start",
+                      textAlign: "center",
+                      mt: 1,
+                    }}
+                  >
+                    <Typography
+                      gutterBottom
+                      sx={{
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Email
+                    </Typography>
+
+                    <Typography
+                      gutterBottom
+                      sx={{ color: "#1976d2", textDecoration: "underline" }}
+                    >
+                      {selectedCompany.companyEmail}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      gutterBottom
+                      sx={{
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Phone
+                    </Typography>
+                    <Typography
+                      gutterBottom
+                      sx={{ color: "#1976d2", textDecoration: "underline" }}
+                    >
+                      {selectedCompany.companyNumbers}
+                    </Typography>
+                  </Box>
+
+                  <Box>
+                    <Typography
+                      gutterBottom
+                      sx={{
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Website
+                    </Typography>
+                    <Typography gutterBottom>
+                      <a
+                        href={selectedCompany.companyWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{
+                          color: "#1976d2",
+                          textDecoration: "underline",
+                        }}
+                      >
+                        {selectedCompany.companyWebsite}
+                      </a>
+                    </Typography>
+                  </Box>
+                </Box>
+              </>
+            ) : (
+              <Typography>Loading company data...</Typography>
+            )}
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={() => setOpen(false)}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Container>
     </Box>
   );
