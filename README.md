@@ -2,36 +2,40 @@
 
 # ITHireSmart 🚀
 
-### تمكين المواهب، تسريع الابتكار بسلاسة ✨
+### Empowering Talent, Accelerating Innovation Seamlessly ✨
 
 </div>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/last%20commit-today-brightgreen?style=for-the-badge" alt="Last Commit">
+  <a href="https://github.com/HamzehJarrar/ITHireSmart/commits/main">
+    <img src="https://img.shields.io/github/last-commit/HamzehJarrar/ITHireSmart?style=for-the-badge&color=brightgreen" alt="Last Commit">
+  </a>
   <img src="https://img.shields.io/github/languages/top/HamzehJarrar/ITHireSmart?style=for-the-badge" alt="Top Language">
   <img src="https://img.shields.io/github/languages/count/HamzehJarrar/ITHireSmart?style=for-the-badge" alt="Language Count">
 </div>
 
 ---
 
-## 🎯 عن المشروع
+## 🎯 About The Project
 
-**ITHireSmart** هو مشروع يهدف إلى تبسيط وتسهيل عملية التوظيف في مجال تكنولوجيا المعلومات. يجمع هذا النظام بين واجهة أمامية تفاعلية مبنية باستخدام **React** ونظام خلفي قوي مبني على **Node.js**، بهدف ربط أفضل المواهب في مجال التكنولوجيا بالفرص الوظيفية المناسبة.
-
----
-
-## 🌟 الميزات الرئيسية
-
-*   **🔐 نظام مصادقة آمن:** تسجيل دخول وإنشاء حسابات جديدة باستخدام JWT Tokens.
-*   **⚛️ واجهة مستخدم عصرية:** واجهة ديناميكية وسريعة الاستجابة مبنية باستخدام React.
-*   **🧩 مكونات Material UI:** تصميم متناسق وجذاب بفضل مكتبة Material UI.
-*   **⚙️ إدارة حالة متقدمة:** استخدام Redux Toolkit لإدارة بيانات التطبيق بكفاءة.
-*   **📅 اختيار التاريخ والوقت:** واجهة سهلة لاختيار التواريخ باستخدام `@mui/x-date-pickers`.
-*   **🔄 تكامل مع API:** اتصال فعال مع الواجهة الخلفية لجلب البيانات ومعالجتها.
+**ITHireSmart** is a project designed to streamline the IT hiring process. It combines an interactive front-end built with **React** and a powerful back-end powered by **Node.js**, aiming to connect top tech talent with the right career opportunities.
 
 ---
 
-## 🛠️ التقنيات المستخدمة
+## 🌟 Key Features
+
+*   **🔐 Secure Authentication:** User registration and login functionality powered by JWT tokens.
+*   **⚛️ Modern UI:** A dynamic and responsive user interface built with React.
+*   **🧩 Material UI Components:** Consistent and appealing design using the Material UI library.
+*   **⚙️ Advanced State Management:** Efficient application state handling with Redux Toolkit.
+*   **📅 Date & Time Pickers:** User-friendly date selection with `@mui/x-date-pickers`.
+*   **🔄 API Integration:** Seamless communication with the backend API for data fetching and manipulation.
+
+---
+
+## 🛠️ Built With
+
+This project is built with a modern tech stack including:
 
 <div align="center">
   <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
@@ -47,72 +51,48 @@
 
 ---
 
-## 🚀 بدء التشغيل
+## 🚀 Getting Started
 
-للبدء، تأكد من تثبيت المتطلبات التالية:
+To get a local copy up and running, follow these simple steps.
 
-*   **Node.js** (إصدار 16 أو أحدث )
-*   **npm** أو **yarn**
+### Prerequisites
+
+Ensure you have the following installed:
+*   **Node.js** (v16 or higher recommended )
+*   **npm** or **yarn**
 *   **Git**
 
-### خطوات التثبيت
+### Installation
 
-1.  **انسخ المستودع (Clone):**
+1.  **Clone the repository:**
     ```bash
     git clone https://github.com/HamzehJarrar/ITHireSmart.git
     cd ITHireSmart
     ```
 
-2.  **انتقل إلى مجلد الواجهة الأمامية (`client` ):**
+2.  **Navigate to the client directory:**
     ```bash
     cd client
     ```
 
-3.  **ثبّت الاعتماديات (Dependencies):**
+3.  **Install dependencies:**
     ```bash
-    npm install  # أو yarn install
+    npm install  # or yarn install
     ```
 
-4.  **شغّل التطبيق:**
+4.  **Start the application:**
     ```bash
-    npm start  # أو yarn start
+    npm start  # or yarn start
     ```
-    سيتم تشغيل التطبيق في وضع التطوير على `http://localhost:3000`.
+    The app will run in development mode at `http://localhost:3000`.
 
-5.  **إعداد الواجهة الخلفية (Backend ):**
-    *   تأكد من تشغيل الخادم الخلفي للمشروع، والذي يعمل عادةً على `http://localhost:5000`.
-
----
-
-## 🔧 الإعدادات والتهيئة
-
-يمكنك تهيئة متغيرات البيئة (Environment Variables ) مثل رابط ה-API من خلال إنشاء ملف `.env` داخل مجلد `client`.
-
-**مثال لملف `.env`:**
-REACT_APP_API_URL=http://localhost:5000/api
-Plain Text
-**ملاحظة:** يجب إعادة تشغيل خادم التطوير بعد أي تعديل على ملف `.env`.
+5.  **Backend Setup:**
+    *   Make sure the project's backend server is running, typically on `http://localhost:5000`.
 
 ---
 
-## 🤝 المساهمة في المشروع
+## 🔧 Configuration
 
-نرحب بجميع المساهمات! إذا كنت ترغب في المساهمة في تطوير **ITHireSmart**، يرجى اتباع الخطوات التالية:
+You can configure environment variables, such as the API URL, by creating a `.env` file in the `client` directory.
 
-1.  قم بعمل **Fork** للمستودع.
-2.  أنشئ **Branch** جديدًا لميزتك الجديدة (`git checkout -b feature/AmazingFeature` ).
-3.  قم بعمل **Commit** لتغييراتك (`git commit -m 'Add some AmazingFeature'`).
-4.  ارفع التغييرات إلى الـ Branch (`git push origin feature/AmazingFeature`).
-5.  افتح **Pull Request**.
-
----
-
-## 📄 الترخيص
-
-لم يتم تحديد ترخيص لهذا المشروع. يرجى التواصل مع صاحب المستودع (HamzehJarrar) قبل استخدام المشروع في أي سياق تجاري.
-
----
-
-<div align="center">
-  صُنع بحب ❤️ بواسطة فريق ITHireSmart
-</div>
+**Example `.env` file:**
