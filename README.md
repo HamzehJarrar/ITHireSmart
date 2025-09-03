@@ -96,3 +96,30 @@ Ensure you have the following installed:
 You can configure environment variables, such as the API URL, by creating a `.env` file in the `client` directory.
 
 **Example `.env` file:**
+REACT_APP_API_URL=http://localhost:5000/api
+Plain Text
+**Note:** Remember to restart the development server after modifying the `.env` file.
+
+---
+
+## 🤝 Contributing
+
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+1.  Fork the Project.
+2.  Create your Feature Branch (`git checkout -b feature/AmazingFeature` ).
+3.  Commit your Changes (`git commit -m 'Add some AmazingFeature'`).
+4.  Push to the Branch (`git push origin feature/AmazingFeature`).
+5.  Open a Pull Request.
+
+---
+
+## 📄 License
+
+License information is not specified in this repository. Please contact the repository owner (HamzehJarrar) before using this project in a commercial setting.
+
+---
+
+<div align="center">
+  Made with ❤️ by the ITHireSmart Team
+</div>
